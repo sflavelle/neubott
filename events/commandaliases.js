@@ -14,7 +14,7 @@ class CommandAliases extends Chariot.Event {
             AliasedCommand.execute(message, args, chariot);
         } 
 
-        if (message.content.search(/^what (else )?did I miss$/i) != -1 || message.content.includes('what I missed')) {
+        if (message.content.search(/^what (else )?did I miss\??$/i) != -1 || message.content.includes('what I missed')) {
             const AliasedCommand = this.client.commands.get('whatdidimiss');
             AliasedCommand.execute(message, args, chariot);
         } 
