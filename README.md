@@ -2,7 +2,7 @@
 
 These are a bunch of random scripts and commands I made for my simple Discord bot, which uses the [Chariot.js](https://github.com/riyacchi/chariot.js) framework.
 
-While I've written Javascript code occasionally before, up til this point it was hacked together or modifying existing Discord bot software (this bot was previously using a combination of [Red-DiscordBot]() and Node-RED). Besides the framework and underlying API, this code is my attempt to put what I know of Javascript to use in making a bot that is completely my own.
+While I've written Javascript code occasionally before, up til this point it was hacked together or modifying existing Discord bot software (this bot was previously using a combination of [Red-DiscordBot](https://github.com/Cog-Creators/Red-DiscordBot) and Node-RED). Besides the framework and underlying API, this code is my attempt to put what I know of Javascript to use in making a bot that is completely my own.
 
 ## Usage/Installation
 
