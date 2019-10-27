@@ -25,7 +25,7 @@ class WhatDidIMiss extends Chariot.Command {
         FS.writeFileSync('./resources/whatimissed.json', JSON.stringify(file, null, 2), function (err) {
             if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/whatimissed.json') }
         })
-        message.channel.createMessage("Saved! You've now missed **" + file.length + "** things. Wow.\nHere's what I just added: `" + newresponse + "`");
+        message.channel.createMessage("✅ Saved! You've now missed **" + file.length + "** things. Wow.\nHere's what I just added: `" + newresponse + "`");
     }
 
     async execute(message, args, chariot) {

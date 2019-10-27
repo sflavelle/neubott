@@ -7,7 +7,7 @@ class GimmeSquids extends Chariot.Command {
 
         this.name = 'gimmesquids';
         this.cooldown = 3;
-        this.aliases = ['squids','splat'];
+        this.aliases = ['squids'];
         this.subcommands = ['add'];
         this.help = {
             message: 'Returns a variety of squids, octopi, and other creatures from the Splatoon series! Tries its best to link to the source where possible.',
@@ -25,7 +25,7 @@ class GimmeSquids extends Chariot.Command {
         FS.writeFileSync('./resources/splat.json', JSON.stringify(file, null, 2), function (err) {
             if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/splat.json') }
         })
-        message.channel.createMessage("Saved! I now have **" + file.length + "** cephalopods.\nHere's what I just added: `" + newresponse + "`");
+        message.channel.createMessage("✅ Saved! I now have **" + file.length + "** cephalopods.\nHere's what I just added: `" + newresponse + "`");
     }
 
     async execute(message, args, chariot) {

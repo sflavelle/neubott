@@ -25,7 +25,7 @@ class BotFacts extends Chariot.Command {
         FS.writeFileSync('./resources/facts.json', JSON.stringify(file, null, 2), function (err) {
             if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/facts.json') }
         })
-        message.channel.createMessage("Saved! That's **" + file.length + "** totally true real things I know now.\nHere's what I just added: `" + newresponse + "`");
+        message.channel.createMessage("✅ Saved! That's **" + file.length + "** totally true real things I know now.\nHere's what I just added: `" + newresponse + "`");
     }
 
     async execute(message, args, chariot) {
