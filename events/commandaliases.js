@@ -9,7 +9,7 @@ class CommandAliases extends Chariot.Event {
     }
 
     async execute(message, args, chariot) {
-        if (message.content.search(/^gimme squids$/i) != -1 || message.content.includes('🦑📷')) {
+        if (message.content.search(/^gimme squids$/i) != -1 || message.content.search(/^🦑 ?📷$/) != -1) {
             const AliasedCommand = this.client.commands.get('gimmesquids');
             AliasedCommand.execute(message, args, chariot);
         } 
