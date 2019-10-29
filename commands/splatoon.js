@@ -93,10 +93,7 @@ class Splatoon extends Chariot.Command {
                 if (timeRightNow < parsedSchedules.details[0].start_time) {
                     message.channel.createEmbed(new Chariot.RichEmbed()
                     .setColor('DARK_GREEN')
-                    .setTitle('There is no Salmon Run shift occuring currently.')
-                    .setDescription('The next one is in ' + (Math.floor(Math.abs(parsedSchedules.details[0].start_time - timeRightNow) /60/60)) + ' hours.')
-                    .setUrl('https://splatoon2.ink/')
-                    .setFooter('Data provided by Splatoon2.ink','https://splatoon2.ink/favicon-32x32.png')
+                    .setTitle('Grizzco will open in **' + (Math.floor(Math.abs(parsedSchedules.details[0].start_time - timeRightNow) /60/60)) + '** hours.')
                     );
                     return; //Only continue further processing if there's a shift running
                 }
