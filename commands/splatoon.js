@@ -109,7 +109,7 @@ class Splatoon extends Chariot.Command {
                     'User-Agent': 'Neubott/0.1 (Neu#1909, @Splatsune)'
                 }
             }
-
+        
         const req2 = http.get(options, (res) => {
             // Chariot.Logger.event(`Splatoon API status code: ${res.statusCode}`);
             // Chariot.Logger.event(`Splatoon API headers: ${JSON.stringify(res.headers)}`);
@@ -123,6 +123,12 @@ class Splatoon extends Chariot.Command {
                 const parsedSchedules = JSON.parse(rawSchedules);
                 FS.writeFileSync('./resources/.cache/spl2-salmonrun.json', JSON.stringify(parsedSchedules, null, 2));
                 var timeEndSR = new Date(parsedSchedules.details[0].end_time);
+                let SRstage = parsedSchedules.details[0].stage;
+                let SRw1 = parsedSchedules.details[0].weapons[0].id > -1 ? parsedSchedules.details[0].weapons[0].weapon.name : parsedSchedules.details[0].weapons[0].coop_special_weapon.name;
+                let SRw2 = parsedSchedules.details[0].weapons[1].id > -1 ? parsedSchedules.details[0].weapons[1].weapon.name : parsedSchedules.details[0].weapons[1].coop_special_weapon.name;
+                let SRw3 = parsedSchedules.details[0].weapons[2].id > -1 ? parsedSchedules.details[0].weapons[2].weapon.name : parsedSchedules.details[0].weapons[2].coop_special_weapon.name;
+                let SRw4 = parsedSchedules.details[0].weapons[3].id > -1 ? parsedSchedules.details[0].weapons[3].weapon.name : parsedSchedules.details[0].weapons[3].coop_special_weapon.name;
+
                 var timeRightNow = Math.floor(Date.now()/1000);
                 var timeLeftSR = Math.floor(Math.abs(timeEndSR - timeRightNow) /60/60);
                 let TSend = Date.now();
@@ -142,9 +148,9 @@ class Splatoon extends Chariot.Command {
                     .setColor('DARK_GREEN')
                     .setTitle('Splatoon 2: Salmon Run Shift')
                     .setDescription('This schedule is valid for the next **' + Math.floor(timeLeftSR) + '** hours')
-                    .setImage('https://splatoon2.ink/assets/splatnet' + parsedSchedules.details[0].stage.image)
-                    .addField('Stage', parsedSchedules.details[0].stage.name, true)
-                    .addField('Weapons', parsedSchedules.details[0].weapons[0].weapon.name + "\n" + parsedSchedules.details[0].weapons[1].weapon.name + "\n" + parsedSchedules.details[0].weapons[2].weapon.name + "\n" + parsedSchedules.details[0].weapons[3].weapon.name, true)
+                    .setImage('https://splatoon2.ink/assets/splatnet' + SRstage.image)
+                    .addField('Stage', SRstage.name, true)
+                    .addField('Weapons', `${SRw1}\n${SRw2}\n${SRw3}\n${SRw4}`, true)
                     .addField('Reward', 'Coming soon!', true)
                     .setUrl('https://splatoon2.ink/')
                     .setTimestamp()
@@ -163,6 +169,11 @@ class Splatoon extends Chariot.Command {
         req2.end();
 
         } else { // Use the cached data
+        let SRstage = cacheSR.details[0].stage;
+        let SRw1 = cacheSR.details[0].weapons[0].id > -1 ? cacheSR.details[0].weapons[0].weapon.name : cacheSR.details[0].weapons[0].coop_special_weapon.name;
+        let SRw2 = cacheSR.details[0].weapons[1].id > -1 ? cacheSR.details[0].weapons[1].weapon.name : cacheSR.details[0].weapons[1].coop_special_weapon.name;
+        let SRw3 = cacheSR.details[0].weapons[2].id > -1 ? cacheSR.details[0].weapons[2].weapon.name : cacheSR.details[0].weapons[2].coop_special_weapon.name;
+        let SRw4 = cacheSR.details[0].weapons[3].id > -1 ? cacheSR.details[0].weapons[3].weapon.name : cacheSR.details[0].weapons[3].coop_special_weapon.name;
         var timeEndSR = new Date(cacheSR.details[0].end_time);
         var timeRightNow = Math.floor(Date.now()/1000);
         var timeLeftSR = Math.floor(Math.abs(timeEndSR - timeRightNow) /60/60);
@@ -178,9 +189,9 @@ class Splatoon extends Chariot.Command {
             .setColor('DARK_GREEN')
             .setTitle('Splatoon 2: Salmon Run Shift')
             .setDescription('This schedule is valid for the next **' + Math.floor(timeLeftSR) + '** hours')
-            .setImage('https://splatoon2.ink/assets/splatnet' + cacheSR.details[0].stage.image)
-            .addField('Stage', cacheSR.details[0].stage.name, true)
-            .addField('Weapons', cacheSR.details[0].weapons[0].weapon.name + "\n" + cacheSR.details[0].weapons[1].weapon.name + "\n" + cacheSR.details[0].weapons[2].weapon.name + "\n" + cacheSR.details[0].weapons[3].weapon.name, true)
+            .setImage('https://splatoon2.ink/assets/splatnet' + SRstage.image)
+            .addField('Stage', SRstage.name, true)
+            .addField('Weapons', `${SRw1}\n${SRw2}\n${SRw3}\n${SRw4}`, true)
             .addField('Reward', 'Coming soon!', true)
             .setUrl('https://splatoon2.ink/')
             .setTimestamp()
