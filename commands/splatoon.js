@@ -1,7 +1,7 @@
 const Chariot = require('chariot.js');
 const FS = require("fs");
 const http = require('https');
-const fetch = require("node-fetch");
+const request = require("request");
 
 class Splatoon extends Chariot.Command {
     constructor() {
@@ -19,9 +19,9 @@ class Splatoon extends Chariot.Command {
     }
 
     async execute(message, args, chariot) {
+        let TSbegin = Date.now();
         // Let's try to make a cache here
         const cacheBattle = ( FS.existsSync('./resources/.cache/spl2-battle.json') ) ? JSON.parse(FS.readFileSync('./resources/.cache/spl2-battle.json', 'utf8')) : null;
-        let TSbegin = Date.now();
         if (cacheBattle == null || cacheBattle.regular[0].end_time < Date.now()/1000) {
         const options = {
             host: 'splatoon2.ink',
@@ -98,8 +98,8 @@ class Splatoon extends Chariot.Command {
                 );
         }
         // Now for the Salmon Run data
-        const cacheSR = ( FS.existsSync('./resources/.cache/spl2-salmonrun.json') ) ? JSON.parse(FS.readFileSync('./resources/.cache/spl2-salmonrun.json', 'utf8')) : null;
         TSbegin = Date.now();
+        const cacheSR = ( FS.existsSync('./resources/.cache/spl2-salmonrun.json') ) ? JSON.parse(FS.readFileSync('./resources/.cache/spl2-salmonrun.json', 'utf8')) : null;
         if (cacheSR == null || cacheSR.details[0].end_time < Date.now()/1000) {
             const options = {
                 host: 'splatoon2.ink',
@@ -124,10 +124,10 @@ class Splatoon extends Chariot.Command {
                 FS.writeFileSync('./resources/.cache/spl2-salmonrun.json', JSON.stringify(parsedSchedules, null, 2));
                 var timeEndSR = new Date(parsedSchedules.details[0].end_time);
                 let SRstage = parsedSchedules.details[0].stage;
-                let SRw1 = parsedSchedules.details[0].weapons[0].id > -1 ? parsedSchedules.details[0].weapons[0].weapon.name : parsedSchedules.details[0].weapons[0].coop_special_weapon.name;
-                let SRw2 = parsedSchedules.details[0].weapons[1].id > -1 ? parsedSchedules.details[0].weapons[1].weapon.name : parsedSchedules.details[0].weapons[1].coop_special_weapon.name;
-                let SRw3 = parsedSchedules.details[0].weapons[2].id > -1 ? parsedSchedules.details[0].weapons[2].weapon.name : parsedSchedules.details[0].weapons[2].coop_special_weapon.name;
-                let SRw4 = parsedSchedules.details[0].weapons[3].id > -1 ? parsedSchedules.details[0].weapons[3].weapon.name : parsedSchedules.details[0].weapons[3].coop_special_weapon.name;
+                let SRw1 = parsedSchedules.details[0].weapons[0].id > -1 ? parsedSchedules.details[0].weapons[0].weapon.name : `*${parsedSchedules.details[0].weapons[0].coop_special_weapon.name}*`;
+                let SRw2 = parsedSchedules.details[0].weapons[1].id > -1 ? parsedSchedules.details[0].weapons[1].weapon.name : `*${parsedSchedules.details[0].weapons[1].coop_special_weapon.name}*`;
+                let SRw3 = parsedSchedules.details[0].weapons[2].id > -1 ? parsedSchedules.details[0].weapons[2].weapon.name : `*${parsedSchedules.details[0].weapons[2].coop_special_weapon.name}*`;
+                let SRw4 = parsedSchedules.details[0].weapons[3].id > -1 ? parsedSchedules.details[0].weapons[3].weapon.name : `*${parsedSchedules.details[0].weapons[3].coop_special_weapon.name}*`;
 
                 var timeRightNow = Math.floor(Date.now()/1000);
                 var timeLeftSR = Math.floor(Math.abs(timeEndSR - timeRightNow) /60/60);
@@ -151,7 +151,7 @@ class Splatoon extends Chariot.Command {
                     .setImage('https://splatoon2.ink/assets/splatnet' + SRstage.image)
                     .addField('Stage', SRstage.name, true)
                     .addField('Weapons', `${SRw1}\n${SRw2}\n${SRw3}\n${SRw4}`, true)
-                    .addField('Reward', 'Coming soon!', true)
+                    .addField('Reward', '*soooon*', true)
                     .setUrl('https://splatoon2.ink/')
                     .setTimestamp()
                     .setFooter('Data provided by Splatoon2.ink, processed in ' + (TSend - TSbegin) + 'ms','https://splatoon2.ink/favicon-32x32.png')
@@ -170,10 +170,10 @@ class Splatoon extends Chariot.Command {
 
         } else { // Use the cached data
         let SRstage = cacheSR.details[0].stage;
-        let SRw1 = cacheSR.details[0].weapons[0].id > -1 ? cacheSR.details[0].weapons[0].weapon.name : cacheSR.details[0].weapons[0].coop_special_weapon.name;
-        let SRw2 = cacheSR.details[0].weapons[1].id > -1 ? cacheSR.details[0].weapons[1].weapon.name : cacheSR.details[0].weapons[1].coop_special_weapon.name;
-        let SRw3 = cacheSR.details[0].weapons[2].id > -1 ? cacheSR.details[0].weapons[2].weapon.name : cacheSR.details[0].weapons[2].coop_special_weapon.name;
-        let SRw4 = cacheSR.details[0].weapons[3].id > -1 ? cacheSR.details[0].weapons[3].weapon.name : cacheSR.details[0].weapons[3].coop_special_weapon.name;
+        let SRw1 = cacheSR.details[0].weapons[0].id > -1 ? cacheSR.details[0].weapons[0].weapon.name : `*${cacheSR.details[0].weapons[0].coop_special_weapon.name}*`;
+        let SRw2 = cacheSR.details[0].weapons[1].id > -1 ? cacheSR.details[0].weapons[1].weapon.name : `*${cacheSR.details[0].weapons[1].coop_special_weapon.name}*`;
+        let SRw3 = cacheSR.details[0].weapons[2].id > -1 ? cacheSR.details[0].weapons[2].weapon.name : `*${cacheSR.details[0].weapons[2].coop_special_weapon.name}*`;
+        let SRw4 = cacheSR.details[0].weapons[3].id > -1 ? cacheSR.details[0].weapons[3].weapon.name : `*${cacheSR.details[0].weapons[3].coop_special_weapon.name}*`;
         var timeEndSR = new Date(cacheSR.details[0].end_time);
         var timeRightNow = Math.floor(Date.now()/1000);
         var timeLeftSR = Math.floor(Math.abs(timeEndSR - timeRightNow) /60/60);
@@ -192,7 +192,7 @@ class Splatoon extends Chariot.Command {
             .setImage('https://splatoon2.ink/assets/splatnet' + SRstage.image)
             .addField('Stage', SRstage.name, true)
             .addField('Weapons', `${SRw1}\n${SRw2}\n${SRw3}\n${SRw4}`, true)
-            .addField('Reward', 'Coming soon!', true)
+            .addField('Reward', '*soooon*', true)
             .setUrl('https://splatoon2.ink/')
             .setTimestamp()
             .setFooter('Cached data provided by Splatoon2.ink, processed in ' + (TSend - TSbegin) + 'ms','https://splatoon2.ink/favicon-32x32.png')
