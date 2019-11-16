@@ -38,11 +38,13 @@ class Splatoon extends Chariot.Command {
         var timeEndBattle = new Date(dataBattle.regular[0].end_time);
         var timeRightNow = Math.floor(Date.now()/1000);
         var timeLeftBattle = Math.floor(Math.abs(timeEndBattle - timeRightNow) /60);
-        var timeLeftBattleFormatted = ''
-        if (Math.floor(timeLeftBattle/60/60) === 0)
-            timeLeftBattleFormatted = `${Math.floor(timeLeftBattle/60%60)} minutes` 
+        var timeLeftSRFormatted = '';
+        if (Math.floor(timeLeftSR/60/60) === 0)
+            timeLeftSRFormatted = `${Math.floor(timeLeftSR/60%60)} minutes` 
+            else if (Math.floor(timeLeftSR/60/60) < 3)
+            timeLeftSRFormatted = `${Math.floor(timeLeftSR/60/60)} hours ${Math.floor(timeLeftSR/60%60)} minutes`
             else 
-            timeLeftBattleFormatted = `${Math.floor(timeLeftBattle/60/60)} hours ${Math.floor(timeLeftBattle/60%60)} minutes`;
+            timeLeftSRFormatted = `${Math.floor(timeLeftSR/60/60)} hours`;
         let TSend = Date.now();
 
         message.channel.createEmbed(new Chariot.RichEmbed()
