@@ -37,12 +37,16 @@ class Splatoon extends Chariot.Command {
         FS.writeFileSync('./resources/.cache/spl2-battle.json', JSON.stringify(dataBattle, null, 2));
         var timeEndBattle = new Date(dataBattle.regular[0].end_time);
         var timeRightNow = Math.floor(Date.now()/1000);
-        var timeLeftBattle = Math.floor(Math.abs(timeEndBattle - timeRightNow) /60);
+        var timeLeftBattle = Math.floor(Math.abs(timeEndBattle - timeRightNow));
         var timeLeftBattleFormatted = ''
-            if (Math.floor(timeLeftBattle/60/60) === 0)
-                timeLeftBattleFormatted = `${Math.floor(timeLeftBattle/60%60)} minutes` 
-                else 
+        switch (Math.floor(timeLeftBattle/60/60)) {
+            case 0:
+                timeLeftBattleFormatted = `${Math.floor(timeLeftBattle/60%60)} minutes`;
+                break;
+            case 1:
+            default: // just in case
                 timeLeftBattleFormatted = `${Math.floor(timeLeftBattle/60/60)} hours ${Math.floor(timeLeftBattle/60%60)} minutes`;
+        }
         let TSend = Date.now();
 
         message.channel.createEmbed(new Chariot.RichEmbed()
@@ -65,10 +69,14 @@ class Splatoon extends Chariot.Command {
             var timeRightNow = Math.floor(Date.now()/1000);
             var timeLeftBattle = Math.floor(Math.abs(timeEndBattle - timeRightNow));
             var timeLeftBattleFormatted = ''
-            if (Math.floor(timeLeftBattle/60/60) === 0)
-                timeLeftBattleFormatted = `${Math.floor(timeLeftBattle/60%60)} minutes` 
-                else 
-                timeLeftBattleFormatted = `${Math.floor(timeLeftBattle/60/60)} hours ${Math.floor(timeLeftBattle/60%60)} minutes`;
+            switch (Math.floor(timeLeftBattle/60/60)) {
+                case 0:
+                    timeLeftBattleFormatted = `${Math.floor(timeLeftBattle/60%60)} minutes`;
+                    break;
+                case 1:
+                default: // just in case
+                    timeLeftBattleFormatted = `${Math.floor(timeLeftBattle/60/60)} hours ${Math.floor(timeLeftBattle/60%60)} minutes`;
+            }
             let TSend = Date.now();
             // Chariot.Logger.event("Current Turf War Stages: " + cacheBattle.regular[0].stage_a.name + " & " + cacheBattle.regular[0].stage_b.name);
             // Chariot.Logger.event("Current Ranked " + cacheBattle.gachi[0].rule.name + " Stages: " + cacheBattle.gachi[0].stage_a.name + " & " + cacheBattle.gachi[0].stage_b.name);
@@ -115,12 +123,18 @@ class Splatoon extends Chariot.Command {
         var timeRightNow = Math.floor(Date.now()/1000);
         var timeLeftSR = Math.floor(Math.abs(timeEndSR - timeRightNow));
         var timeLeftSRFormatted = '';
-        if (Math.floor(timeLeftSR/60/60) === 0)
-            timeLeftSRFormatted = `${Math.floor(timeLeftSR/60%60)} minutes` 
-            else if (Math.floor(timeLeftSR/60/60) < 3)
-            timeLeftSRFormatted = `${Math.floor(timeLeftSR/60/60)} hours ${Math.floor(timeLeftSR/60%60)} minutes`
-            else 
-            timeLeftSRFormatted = `${Math.floor(timeLeftSR/60/60)} hours`;
+        switch (Math.floor(timeLeftSR/60/60)) {
+            case 0:
+                    timeLeftSRFormatted = `${Math.floor(timeLeftSR/60%60)} minutes`;
+                break;
+            case 1:
+            case 2:
+            case 3:
+                timeLeftSRFormatted = `${Math.floor(timeLeftSR/60/60)} hours ${Math.floor(timeLeftSR/60%60)} minutes`
+                break;
+            default: 
+                timeLeftSRFormatted = `${Math.floor(timeLeftSR/60/60)} hours`;
+        }
         let TSend = Date.now();
         // Chariot.Logger.event("Current Turf War Stages: " + dataSR.regular[0].stage_a.name + " & " + dataSR.regular[0].stage_b.name);
         // Chariot.Logger.event("Current Ranked " + dataSR.gachi[0].rule.name + " Stages: " + dataSR.gachi[0].stage_a.name + " & " + dataSR.gachi[0].stage_b.name);
@@ -153,22 +167,29 @@ class Splatoon extends Chariot.Command {
             dataSRG = reqSRG.data;
             FS.writeFileSync('./resources/.cache/spl2-srgear.json', JSON.stringify(dataSRG, null, 2));
             } else {dataSRG = cacheSRG;};
+            var timeEndSR = new Date(cacheSR.details[0].end_time);
         let SRstage = cacheSR.details[0].stage;
         let SRw1 = cacheSR.details[0].weapons[0].id > -1 ? cacheSR.details[0].weapons[0].weapon.name : `*${cacheSR.details[0].weapons[0].coop_special_weapon.name}*`;
         let SRw2 = cacheSR.details[0].weapons[1].id > -1 ? cacheSR.details[0].weapons[1].weapon.name : `*${cacheSR.details[0].weapons[1].coop_special_weapon.name}*`;
         let SRw3 = cacheSR.details[0].weapons[2].id > -1 ? cacheSR.details[0].weapons[2].weapon.name : `*${cacheSR.details[0].weapons[2].coop_special_weapon.name}*`;
         let SRw4 = cacheSR.details[0].weapons[3].id > -1 ? cacheSR.details[0].weapons[3].weapon.name : `*${cacheSR.details[0].weapons[3].coop_special_weapon.name}*`;
         let SRreward = `${dataSRG.coop.reward_gear.gear.name}`
-        var timeEndSR = new Date(cacheSR.details[0].end_time);
+        
         var timeRightNow = Math.floor(Date.now()/1000);
         var timeLeftSR = Math.floor(Math.abs(timeEndSR - timeRightNow));
         var timeLeftSRFormatted = '';
-        if (Math.floor(timeLeftSR/60/60) === 0)
-            timeLeftSRFormatted = `${Math.floor(timeLeftSR/60%60)} minutes` 
-            else if (Math.floor(timeLeftSR/60/60) < 3)
-            timeLeftSRFormatted = `${Math.floor(timeLeftSR/60/60)} hours ${Math.floor(timeLeftSR/60%60)} minutes`
-            else 
-            timeLeftSRFormatted = `${Math.floor(timeLeftSR/60/60)} hours`;
+        switch (Math.floor(timeLeftSR/60/60)) {
+            case 0:
+                    timeLeftSRFormatted = `${Math.floor(timeLeftSR/60%60)} minutes`;
+                break;
+            case 1:
+            case 2:
+            case 3:
+                timeLeftSRFormatted = `${Math.floor(timeLeftSR/60/60)} hours ${Math.floor(timeLeftSR/60%60)} minutes`
+                break;
+            default: 
+                timeLeftSRFormatted = `${Math.floor(timeLeftSR/60/60)} hours`;
+        }
         let TSend = Date.now();
         if (timeRightNow < cacheSR.details[0].start_time) {
             message.channel.createEmbed(new Chariot.RichEmbed()
