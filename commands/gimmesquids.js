@@ -8,7 +8,7 @@ class GimmeSquids extends Chariot.Command {
         this.name = 'gimmesquids';
         this.cooldown = 3;
         this.aliases = ['squids'];
-        this.subcommands = ['add'];
+        this.subcommands = ['add', 'remove'];
         this.help = {
             message: 'Returns a variety of squids, octopi, and other creatures from the Splatoon series! Tries its best to link to the source where possible.',
             usage: 'gimmesquids',
@@ -26,6 +26,20 @@ class GimmeSquids extends Chariot.Command {
             if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/splat.json') }
         })
         message.channel.createMessage("✅ Saved! I now have **" + file.length + "** cephalopods.\nHere's what I just added: `" + newresponse + "`");
+    }
+
+    async remove(message, args, chariot){
+        Chariot.Logger.event("Removing from splat: args: '" + args.join(' ') + "'");
+        var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8')); //Load the file into memory and parse it
+        var searchtext = args.join(' ');
+        const searchindex = (element) => element.includes(searchtext);
+        let delIndex = file.findIndex(searchindex);
+        let deletedtext = file[delIndex];
+        file.splice(delIndex,1);
+        FS.writeFileSync('./resources/splat.json', JSON.stringify(file, null, 2), function (err) {
+            if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/splat.json') }
+        })
+        message.channel.createMessage("✅ Deleted. I now have **" + file.length + "** cephalopods.\nWe removed: `" + deletedtext + "`");
     }
 
     async execute(message, args, chariot) {

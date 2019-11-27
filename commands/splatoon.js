@@ -45,7 +45,7 @@ class Splatoon extends Chariot.Command {
                 break;
             case 1:
             default: // just in case
-                timeLeftBattleFormatted = `${Math.floor(timeLeftBattle/60/60)} hours ${Math.floor(timeLeftBattle/60%60)} minutes`;
+                timeLeftBattleFormatted = `${Math.floor(timeLeftBattle/60/60)} hour ${Math.floor(timeLeftBattle/60%60)} minutes`;
         }
         let TSend = Date.now();
 
@@ -75,7 +75,7 @@ class Splatoon extends Chariot.Command {
                     break;
                 case 1:
                 default: // just in case
-                    timeLeftBattleFormatted = `${Math.floor(timeLeftBattle/60/60)} hours ${Math.floor(timeLeftBattle/60%60)} minutes`;
+                    timeLeftBattleFormatted = `${Math.floor(timeLeftBattle/60/60)} hour ${Math.floor(timeLeftBattle/60%60)} minutes`;
             }
             let TSend = Date.now();
             // Chariot.Logger.event("Current Turf War Stages: " + cacheBattle.regular[0].stage_a.name + " & " + cacheBattle.regular[0].stage_b.name);

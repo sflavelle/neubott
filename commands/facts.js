@@ -8,7 +8,7 @@ class BotFacts extends Chariot.Command {
         this.name = 'facts';
         this.cooldown = 3;
         this.aliases = ['botfacts','bucketfacts'];
-        this.subcommands = ['add'];
+        this.subcommands = ['add', 'remove'];
         this.help = {
             message: "Neubott has a lot of true, definitely real facts",
             usage: 'facts',
@@ -26,6 +26,20 @@ class BotFacts extends Chariot.Command {
             if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/facts.json') }
         })
         message.channel.createMessage("✅ Saved! That's **" + file.length + "** totally true real things I know now.\nHere's what I just added: `" + newresponse + "`");
+    }
+
+    async remove(message, args, chariot){
+        Chariot.Logger.event("Removing from facts: args: '" + args.join(' ') + "'");
+        var file = JSON.parse(FS.readFileSync('./resources/facts.json', 'utf8')); //Load the file into memory and parse it
+        var searchtext = args.join(' ');
+        const searchindex = (element) => element.includes(searchtext);
+        let delIndex = file.findIndex(searchindex);
+        let deletedtext = file[delIndex];
+        file.splice(delIndex,1);
+        FS.writeFileSync('./resources/facts.json', JSON.stringify(file, null, 2), function (err) {
+            if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/facts.json') }
+        })
+        message.channel.createMessage("✅ Deleted. I now have **" + file.length + "** real ~~fake~~ facts.\nWe removed: `" + deletedtext + "`");
     }
 
     async execute(message, args, chariot) {

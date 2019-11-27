@@ -8,7 +8,7 @@ class Raocowisms extends Chariot.Command {
         this.name = 'raocowisms';
         this.cooldown = 3;
         this.aliases = ['demo','raocow'];
-        this.subcommands = ['add'];
+        this.subcommands = ['add', 'remove'];
         this.help = {
             message: "Hey there everyone",
             usage: 'raocowisms',
@@ -26,6 +26,20 @@ class Raocowisms extends Chariot.Command {
             if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/raocowisms.json') }
         })
         message.channel.createMessage("✅ You know what they say: **" + file.length + "** raocow quotes will probably make you sick eventually.\nHere's what I just added: `" + newresponse + "`");
+    }
+
+    async remove(message, args, chariot){
+        Chariot.Logger.event("Removing from raocowisms: args: '" + args.join(' ') + "'");
+        var file = JSON.parse(FS.readFileSync('./resources/raocowisms.json', 'utf8')); //Load the file into memory and parse it
+        var searchtext = args.join(' ');
+        const searchindex = (element) => element.includes(searchtext);
+        let delIndex = file.findIndex(searchindex);
+        let deletedtext = file[delIndex];
+        file.splice(delIndex,1);
+        FS.writeFileSync('./resources/raocowisms.json', JSON.stringify(file, null, 2), function (err) {
+            if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/raocowisms.json') }
+        })
+        message.channel.createMessage("✅ Deleted. That was a demo, y'know?\nWe removed: `" + deletedtext + "`");
     }
 
     async execute(message, args, chariot) {
