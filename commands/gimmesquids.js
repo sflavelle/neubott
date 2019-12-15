@@ -21,6 +21,13 @@ class GimmeSquids extends Chariot.Command {
         Chariot.Logger.event("Adding to splat: args: '" + args.join(' ') + "'");
         var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8')); //Load the file into memory and parse it
         var newresponse = args.join(' ');
+        const searchindex = (element) => element.includes(newresponse);
+        if (file.findIndex(searchindex) !== -1) {
+            let oldtextIndex = file.findIndex(searchindex);
+            let oldtext = file[oldtextIndex];
+            message.channel.createMessage("💥 That already exists in my database!\nThe older message says: `" + oldtext + "`");
+            return;
+        };
         file.push(newresponse);
         FS.writeFileSync('./resources/splat.json', JSON.stringify(file, null, 2), function (err) {
             if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/splat.json') }
