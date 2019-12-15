@@ -40,13 +40,32 @@ class GimmeSquids extends Chariot.Command {
         var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8')); //Load the file into memory and parse it
         var searchtext = args.join(' ');
         const searchindex = (element) => element.includes(searchtext);
-        let delIndex = file.findIndex(searchindex);
-        let deletedtext = file[delIndex];
-        file.splice(delIndex,1);
-        FS.writeFileSync('./resources/splat.json', JSON.stringify(file, null, 2), function (err) {
-            if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/splat.json') }
-        })
-        message.channel.createMessage("✅ Deleted. I now have **" + file.length + "** cephalopods.\nWe removed: `" + deletedtext + "`");
+        if (file.findIndex(searchindex) !== -1) {
+            let searchMatches = file.reduce(function(a, e, i){
+                if (e.search(searchtext) !== -1)
+                a.push(i);
+                return a;
+            }, []); // source: https://stackoverflow.com/a/20798754
+            // message.channel.createMessage("⌨ match results: `" + searchMatches.join(",") + "`");
+            if (searchMatches.length > 1) {
+                Chariot.Logger.event(`Removing from splat: too many matches (${searchMatches.length})`);
+                message.channel.createMessage(`💥 There are too many matches for that string (**${searchMatches.length}**)!\nPlease be more specific and match **only** one item.`);
+                return;
+            } else {
+                let delIndex = file.findIndex(searchindex);
+                let deletedtext = file[delIndex];
+
+                file.splice(delIndex,1);
+                FS.writeFileSync('./resources/splat.json', JSON.stringify(file, null, 2), function (err) {
+                    if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/splat.json') }
+                })
+                message.channel.createMessage("<:Splatted:606703438730100766> Deleted. I now have **" + file.length + "** cephalopods.\nWe removed: `" + deletedtext + "`");
+                Chariot.Logger.event(`Removing from splat: removed`);
+                }} else {
+                message.channel.createMessage("💥 Nothing matches that.");
+                Chariot.Logger.event(`Removing from splat: no matches`);
+                return;
+                };
     }
 
     async execute(message, args, chariot) {
