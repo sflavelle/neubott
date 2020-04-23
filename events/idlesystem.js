@@ -34,10 +34,14 @@ class IdleSystem extends Chariot.Event {
         if (!message.author.bot) {
             switch (message.channel.id) {
                 case "206734382990360576": // #meep
+                    clearTimeout(this.client.idle[message.channel.id]); //I have to clear the timeout, before I set it...
+                    // Chariot.Logger.event(`[Idle] new message in ${message.channel.name}`);
+                    this.client.idle[message.channel.id] = setTimeout(IdleContent, 6*60*60*1000, message); //6 hours
+                    break;
                 case "383151258065698816": // #bott-playground
                     clearTimeout(this.client.idle[message.channel.id]); //I have to clear the timeout, before I set it...
-                    Chariot.Logger.event(`[Idle] new message in ${message.channel.name}`);
-                    this.client.idle[message.channel.id] = setTimeout(IdleContent, 45*1000, message); //45 minutes
+                    // Chariot.Logger.event(`[Idle] new message in ${message.channel.name}`);
+                    this.client.idle[message.channel.id] = setTimeout(IdleContent, 45*60*1000, message); //45 minutes
                     break;
                 case "538503736423612426": // #splatoon
                 default:
