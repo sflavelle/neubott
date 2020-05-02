@@ -16,7 +16,7 @@ class IdleSystem extends Chariot.Event {
         if (!this.client.idle) { this.client.idle = []; }
 
         function IdleContent(message) {
-            switch (Math.floor(Math.random()*3)) {
+            switch (Math.floor(Math.random()*4)) {
                 case 0: // death messages
                     let deaths = ( FS.existsSync('./resources/idle/deaths.json') ) ? JSON.parse(FS.readFileSync('./resources/idle/deaths.json', 'utf8')) : null;
                     let user = (message.member.nick) ? message.member.nick : message.author.username;
@@ -38,6 +38,11 @@ class IdleSystem extends Chariot.Event {
                     let facts = ( FS.existsSync('./resources/facts.json') ) ? JSON.parse(FS.readFileSync('./resources/facts.json', 'utf8')) : null;
                     let factsMessage = facts[Math.floor(Math.random()*facts.length)];
                     message.channel.createMessage(`🕑🎙 ${factsMessage}\n*You can add more of these messages with* \`//help facts\``);
+                    break;
+                case 3: // raocowisms
+                    let rao = ( FS.existsSync('./resources/raocowisms.json') ) ? JSON.parse(FS.readFileSync('./resources/raocowisms.json', 'utf8')) : null;
+                    let raoMessage = rao[Math.floor(Math.random()*rao.length)];
+                    message.channel.createMessage(`🕑<:catplanet:642306198443655178> ${raoMessage}\n*You can add more of these messages with* \`//help raocowisms\``);
                     break;
                 default:
                     break;
