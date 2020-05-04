@@ -31,18 +31,18 @@ class IdleSystem extends Chariot.Event {
                     deathMessage = deathMessage.replace("`USER`", user.toUpperCase());
                     deathMessage = deathMessage.replace("`SERVER`", server.toUpperCase());
 
-                    message.channel.createMessage(`🕑💀 ${deathMessage}\n*You can add more of these messages with* \`//help deaths\``);
+                    message.channel.createMessage(`🕑💀 ${deathMessage}\n*If you have any other deaths/failure messages for ${user}, or the last person to speak in the channel, check out* \`//help deaths\``);
                     break;
                 case 1: // facts
                 case 2:
                     let facts = ( FS.existsSync('./resources/facts.json') ) ? JSON.parse(FS.readFileSync('./resources/facts.json', 'utf8')) : null;
                     let factsMessage = facts[Math.floor(Math.random()*facts.length)];
-                    message.channel.createMessage(`🕑🎙 ${factsMessage}\n*You can add more of these messages with* \`//help facts\``);
+                    message.channel.createMessage(`🕑🎙 ${factsMessage}\n*Got anymore totally true for real facts?* \`//help facts\``);
                     break;
                 case 3: // raocowisms
                     let rao = ( FS.existsSync('./resources/raocowisms.json') ) ? JSON.parse(FS.readFileSync('./resources/raocowisms.json', 'utf8')) : null;
                     let raoMessage = rao[Math.floor(Math.random()*rao.length)];
-                    message.channel.createMessage(`🕑<:catplanet:642306198443655178> ${raoMessage}\n*You can add more of these messages with* \`//help raocowisms\``);
+                    message.channel.createMessage(`🕑<:catplanet:642306198443655178> ${raoMessage}\n*That was a demo, to see what happens when you use* \`//help raocowisms\``);
                     break;
                 default:
                     break;
