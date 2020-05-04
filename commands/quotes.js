@@ -1,6 +1,7 @@
 const Chariot = require('chariot.js');
 const FS = require("fs");
-const flatten = require('array-flatten')
+const flatten = require('array-flatten');
+const validURL = require('valid-url');
 
 class Quotes extends Chariot.Command {
     constructor() {
@@ -34,20 +35,45 @@ class Quotes extends Chariot.Command {
 
 
     async test(message, args, chariot){ // test command to evaluate what's being passed to it
-        try {
-            let msglink = new URL(args[0]);
-            msglinkText = msglink.toString();
-            if (msglinkText.startsWith('https://discordapp.com/channels/')) {
-                let msgdata = msglink.pathname;
-                // msgdata.shift();
+        if (validURL.isUri(args[0])) {
+        // if argument is an URL
+            try {
+                let msglink = new URL(args[0]);
+                let msglinkText = msglink.toString();
+                if (msglinkText.startsWith('https://discordapp.com/channels/')) {
+                    let url = args[0];
+                    let array = url.split('/');
+                    array = array.slice(4); // get the ID parts
 
-                message.channel.createMessage(`✅ URL accepted: ${msglinkText}. Extracted portion: ${msgdata}`);
-            } else {throw new Error('WRONGURL')};
-        } catch (e) {
-            if (e instanceof TypeError) {
+                    message.channel.createMessage(`✅ URL accepted: ${msglinkText}.\nServer ID: ${array[0]}.\nChannel ID: ${array[1]}.\nMessage ID: ${array[2]}.`);
+                    
+                    let msg = chariot.getMessage(array[1].toString(),array[2].toString()) // Get the message object
+                    msg.then((msg) => {
+                        Chariot.Logger.event("[QUOTE] Pulled message object");
+                        console.log(msg);
+                        let timestamp = new Date(msg.timestamp);
+                        timestamp = timestamp.toDateString();
+                        message.channel.createMessage(`✅ \`Message created. Is this what you were looking for?\`\n"${msg.content}"\n—<@${msg.member.id}> (${timestamp} in <#${msg.channel.id}>)`);
+                    });
+                } else {throw new Error('WRONGURL')};
+            } catch (e) {
+                if (e.message === 'WRONGURL') {
+                    message.channel.createMessage("❌ That URL doesn't link to a Discord server.");
+                } else {message.channel.createMessage(`❌ **${e.name}**: ${e.message}`);};
+            };
+        } else {
+        // if argument is a string
+            try {
+                let params = args.join(' ').split('" ');
+                let quote = params[0].slice(1);
+                let author = params[1];
+
+                // processing on the quote text to be safe
+                
+
+                message.channel.createMessage(`Test quote: "${quote}"\nTest author: ${author}`);
+            } catch (e) {
                 message.channel.createMessage(`❌ **${e.name}**: ${e.message}`);
-            } else if (e.message === 'WRONGURL') {
-                message.channel.createMessage("❌ That URL doesn't link to a Discord server.");
             };
         };
         // Chariot.Logger.event("Adding to quotes: args: '" + args.join(' ') + "'");
