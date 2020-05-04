@@ -12,7 +12,7 @@ class GimmeSquids extends Chariot.Command {
         this.help = {
             message: 'Returns a variety of squids, octopi, and other creatures from the Splatoon series! Tries its best to link to the source where possible.',
             usage: 'gimmesquids',
-            example: ['gimmesquids', 'squids add <text or an url>'],
+            example: ['gimmesquids', 'squids add <text or an url>', 'squids <search term>'],
             inline: true
         }
     }
@@ -69,9 +69,17 @@ class GimmeSquids extends Chariot.Command {
     }
 
     async execute(message, args, chariot) {
+
+        if (args[0]) {
             var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8')); //Load the file into memory and parse it
-            var response = file[Math.floor(Math.random()*file.length)]; //Choose a response at random
-            message.channel.createMessage(response); //Print it
+            file = file.filter(link => link.toLowerCase().includes(args.join(" ")));
+            if (file.length == 0) {message.channel.createMessage("💥 Nothing matches that. *Is the search term in lowercase?*"); return null;}
+        }
+        else {
+            var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8')); //Load the file into memory and parse it
+        }
+        var response = file[Math.floor(Math.random()*file.length)]; //Choose a response at random
+        message.channel.createMessage(response); //Print it
     }
 }
 
