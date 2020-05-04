@@ -70,13 +70,13 @@ class GimmeSquids extends Chariot.Command {
 
     async execute(message, args, chariot) {
 
-        if (!args === undefined || args.length > 0) {
+        if (args === undefined || args.length == 0) {
             var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8')); //Load the file into memory and parse it
-            file = file.filter(link => link.toLowerCase().includes(args.join(" ")));
-            if (file.length == 0) {message.channel.createMessage("💥 Nothing matches that. *Is the search term in lowercase?*"); return null;}
         }
         else {
             var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8')); //Load the file into memory and parse it
+            file = file.filter(link => link.toLowerCase().includes(args.join(" ")));
+            if (file.length == 0) {message.channel.createMessage("💥 Nothing matches that. *Is the search term in lowercase?*"); return null;}
         }
         var response = file[Math.floor(Math.random()*file.length)]; //Choose a response at random
         message.channel.createMessage(response); //Print it

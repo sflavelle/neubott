@@ -29,9 +29,16 @@ class CommandAliases extends Chariot.Event {
 
         // For everyone else
 
-        if (message.content.search(/^gimme squids$/i) != -1 || message.content.search(/^🦑 ?📷$/) != -1) {
-            const AliasedCommand = this.client.commands.get('gimmesquids');
-            AliasedCommand.execute(message, args, chariot);
+        if (message.content.search(/^gimme (\w+)$/i) != -1 || message.content.search(/^🦑 ?📷( ?\w+)?$/) != -1) {
+            if (message.content.search(/^gimme squids$/i) != -1 || message.content.search(/^🦑 ?📷$/) != -1) //test again for regular command
+            {
+                const AliasedCommand = this.client.commands.get('gimmesquids');
+                AliasedCommand.execute(message, chariot);
+            }
+            else
+            {
+                // nothing yet
+            }
         } 
 
         if (message.content.search(/^what (else )?did I miss\??$/i) != -1 || message.content.includes('what I missed')) {
