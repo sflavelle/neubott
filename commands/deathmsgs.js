@@ -6,6 +6,7 @@ class DeathMsgs extends Chariot.Command {
         super();
 
         this.name = 'deathmsgs';
+        this.allowDMs = true;
         this.cooldown = 3;
         this.aliases = ['deaths'];
         this.subcommands = ['add', 'remove'];

@@ -7,6 +7,7 @@ class Splatoon extends Chariot.Command {
         super();
 
         this.name = 'splatoon';
+        this.allowDMs = true;
         this.cooldown = 60;
         this.aliases = ['splat'];
         this.help = {

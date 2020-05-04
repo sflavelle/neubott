@@ -6,6 +6,7 @@ class Raocowisms extends Chariot.Command {
         super();
 
         this.name = 'raocowisms';
+        this.allowDMs = true;
         this.cooldown = 3;
         this.aliases = ['demo','raocow'];
         this.subcommands = ['add', 'remove'];

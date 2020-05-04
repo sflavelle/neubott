@@ -6,6 +6,7 @@ class BotFacts extends Chariot.Command {
         super();
 
         this.name = 'facts';
+        this.allowDMs = true;
         this.cooldown = 3;
         this.aliases = ['botfacts','bucketfacts'];
         this.subcommands = ['add', 'remove'];

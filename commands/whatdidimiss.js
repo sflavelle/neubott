@@ -6,6 +6,7 @@ class WhatDidIMiss extends Chariot.Command {
         super();
 
         this.name = 'whatdidimiss';
+        this.allowDMs = true;
         this.cooldown = 3;
         this.aliases = ['whatimissed'];
         this.subcommands = ['add', 'remove'];

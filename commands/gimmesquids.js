@@ -6,6 +6,7 @@ class GimmeSquids extends Chariot.Command {
         super();
 
         this.name = 'gimmesquids';
+        this.allowDMs = true;
         this.cooldown = 3;
         this.aliases = ['squids'];
         this.subcommands = ['add', 'remove'];
