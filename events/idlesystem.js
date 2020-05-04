@@ -37,7 +37,7 @@ class IdleSystem extends Chariot.Event {
                 case 2:
                     let facts = ( FS.existsSync('./resources/facts.json') ) ? JSON.parse(FS.readFileSync('./resources/facts.json', 'utf8')) : null;
                     let factsMessage = facts[Math.floor(Math.random()*facts.length)];
-                    message.channel.createMessage(`🕑🎙 ${factsMessage}\n*Got anymore totally true for real facts?* \`//help facts\``);
+                    message.channel.createMessage(`🕑🎙 ${factsMessage}\n*Got anymore totally true for-real facts?* \`//help facts\``);
                     break;
                 case 3: // raocowisms
                     let rao = ( FS.existsSync('./resources/raocowisms.json') ) ? JSON.parse(FS.readFileSync('./resources/raocowisms.json', 'utf8')) : null;
