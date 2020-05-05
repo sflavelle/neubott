@@ -20,7 +20,7 @@ class GimmeSquids extends Chariot.Command {
 
     async add(message, args, chariot){
         Chariot.Logger.event("Adding to splat: args: '" + args.join(' ') + "'");
-        var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8')); //Load the file into memory and parse it
+        var file = (FS.existsSync('./resources/splat.json')) ? JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8')) : new Array(); //Load the file into memory and parse it
         var newresponse = args.join(' ');
         const searchindex = (element) => element.includes(newresponse);
         if (file.findIndex(searchindex) !== -1) {
@@ -38,7 +38,9 @@ class GimmeSquids extends Chariot.Command {
 
     async remove(message, args, chariot){
         Chariot.Logger.event("Removing from splat: args: '" + args.join(' ') + "'");
-        var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8')); //Load the file into memory and parse it
+        try {
+            var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8'));
+        } catch (e) {if (e.code === "ENOENT") {message.channel.createMessage("💥 I don't have anything yet!"); return null;}};
         var searchtext = args.join(' ');
         const searchindex = (element) => element.includes(searchtext);
         if (file.findIndex(searchindex) !== -1) {
@@ -70,12 +72,12 @@ class GimmeSquids extends Chariot.Command {
     }
 
     async execute(message, args, chariot) {
+        try {
+            var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8'));
+        } catch (e) {if (e.code === "ENOENT") {message.channel.createMessage("💥 I don't have anything yet!"); return null;}};
 
-        if (args === undefined || args.length == 0) {
-            var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8')); //Load the file into memory and parse it
-        }
+        if (args === undefined || args.length == 0) {}
         else {
-            var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8')); //Load the file into memory and parse it
             file = file.filter(link => link.toLowerCase().includes(args.join(" ")));
             if (file.length == 0) {message.channel.createMessage("💥 Nothing matches that. *Is the search term in lowercase?*"); return null;}
         }
