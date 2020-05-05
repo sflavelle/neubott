@@ -10,7 +10,7 @@ class Quotes extends Chariot.Command {
         this.name = 'quote';
         this.admin = true; // while in testing
         this.cooldown = 3;
-        this.subcommands = ['test'];
+        this.subcommands = ['test', 'add', 'undo'];
         this.help = {
             message: "Remember quotes your friends said! You can currently save quotes by .",
             usage: 'quote',
@@ -35,6 +35,11 @@ class Quotes extends Chariot.Command {
 
 
     async test(message, args, chariot){ // test command to evaluate what's being passed to it
+        let quote;
+        let author;
+        let authorid;
+        let timestamp;
+
         if (validURL.isUri(args[0])) {
         // if argument is an URL
             try {
@@ -45,16 +50,18 @@ class Quotes extends Chariot.Command {
                     let array = url.split('/');
                     array = array.slice(4); // get the ID parts
 
-                    message.channel.createMessage(`✅ URL accepted: ${msglinkText}.\nServer ID: ${array[0]}.\nChannel ID: ${array[1]}.\nMessage ID: ${array[2]}.`);
+                    // message.channel.createMessage(`✅ URL accepted: ${msglinkText}.\nServer ID: ${array[0]}.\nChannel ID: ${array[1]}.\nMessage ID: ${array[2]}.`);
                     
                     let msg = chariot.getMessage(array[1].toString(),array[2].toString()) // Get the message object
                     msg.then((msg) => {
                         Chariot.Logger.event("[QUOTE] Pulled message object");
-                        console.log(msg);
-                        let timestamp = new Date(msg.timestamp);
-                        timestamp = timestamp.toDateString();
-                        message.channel.createMessage(`✅ \`Message created. Is this what you were looking for?\`\n"${msg.content}"\n—<@${msg.member.id}> (${timestamp} in <#${msg.channel.id}>)`);
+                        // console.log(msg);
+                        quote = msg.content;
+                        author = msg.member.nick ? msg.member.nick : msg.author.username;
+                        timestamp = new Date(msg.timestamp);
+                        authorid = msg.member ? msg.member.id : msg.author.id;
                     });
+                    await msg;
                 } else {throw new Error('WRONGURL')};
             } catch (e) {
                 if (e.message === 'WRONGURL') {
@@ -64,20 +71,47 @@ class Quotes extends Chariot.Command {
         } else {
         // if argument is a string
             try {
-                let params = args.join(' ').split('" ');
-                let quote = params[0].slice(1);
-                let author = params[1];
-
-                // processing on the quote text to be safe
-                
-
-                message.channel.createMessage(`Test quote: "${quote}"\nTest author: ${author}`);
+                if (!args.join(' ').match(/^"(.+)" (.+)$/)) { message.channel.createMessage(`❌ That's not in a format I can use.\nTry: \`"Your quote" Author\``); return null;}
+                let params = args.join(' ').match(/^"(.+)" (.+)$/);
+                quote = params[1];
+                author = params[2].match(/^<@(\d+)>/) ? params[2].match(/^<@(\d+)>/)[1] : params[2] ;
+                authorid = params[2].match(/^<@(\d+)>/) ? params[2].match(/^<@(\d+)>/)[1] : null ;
+                timestamp = new Date();
             } catch (e) {
                 message.channel.createMessage(`❌ **${e.name}**: ${e.message}`);
             };
         };
+        try { // construct the message
+            let tsFormat = new Intl.DateTimeFormat('en-us', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            })
+            timestamp = tsFormat.format(timestamp);
+            // processing on the quote text to be safe
+            
+            let embed = {
+                "title" : "Quote generated",
+                "color" : 0x00ff00,
+                "description": `"${quote}"\n—*${authorid ? "<@" + authorid + ">" : author} / ${timestamp} [#xxx]*`
+            }
+    
+            let output = {
+                "content" : `✅ \`Message created. Is this what you were looking for?`,
+                "embed" : embed,
+                "allowedMentions" : [{ "everyone" : false, "users": false}]
+            };
+            message.channel.createMessage(output);
+
+        } catch (e) {
+                message.channel.createMessage(`❌ **${e.name}**: ${e.message}`);
+            };
         // Chariot.Logger.event("Adding to quotes: args: '" + args.join(' ') + "'");
         // let file = ( FS.existsSync(`./resources/quotes/${message.channel.guild.id}.json`) ) ? JSON.parse(FS.readFileSync(`./resources/quotes/${message.channel.guild.id}.json`, 'utf8')) : new Array(); //Load the file into memory and parse it
+    }
+
+    async add(message, args, chariot) {
+        
     }
 
     async execute(message, args, chariot) {
