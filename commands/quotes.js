@@ -8,8 +8,7 @@ class Quotes extends Chariot.Command {
         super();
 
         this.name = 'quote';
-        this.admin = true; // while in testing
-        this.cooldown = 3;
+        this.cooldown = 2;
         this.subcommands = ['test', 'add', 'undo'];
         this.help = {
             message: "Remember quotes your friends said! You can currently save quotes by .",
@@ -237,8 +236,24 @@ class Quotes extends Chariot.Command {
     async execute(message, args, chariot) {
         try {
             var file = JSON.parse(FS.readFileSync(`./resources/quotes/${message.channel.guild.id}.json`, 'utf8')); //Load the file into memory and parse it
-            var rquote = file[Math.floor(Math.random()*file.length)]; //Choose a response at random
-            if (rquote.timestamp == null) { rquote.timestamp = "Long Ago" } else {
+            if (args[0] === "me") { // Get only "my" quotes
+                file = file.filter(q => q.author_id === message.author.id);
+                var rquote = file[Math.floor(Math.random()*file.length)]; //RNG
+            } 
+            else if (args.join(' ').match(/^<@(\d+)>/)) { // Get only "this user"'s quotes
+                message.channel.guild.fetchAllMembers();
+                file = file.filter(q => q.author_id === args.join(' ').match(/^<@(\d+)>/)[1]);
+                var rquote = file[Math.floor(Math.random()*file.length)]; //RNG
+            } 
+            else if (args.join(' ').match(/^(\d+)$/)) { // Get this quote number
+                let i = Number.parseInt(args[0].match(/^(\d+)$/));
+                var rquote = file[i-1];
+            }
+            else { // Get every quote
+                var rquote = file[Math.floor(Math.random()*file.length)]; //Choose a response at random
+            }
+            if (rquote.timestamp == null) { rquote.timestamp = "in the Before Times" } //for old imported quotes
+            else {
                 let tsFormat = new Intl.DateTimeFormat('en-us', {
                     month: 'long',
                     day: 'numeric',
