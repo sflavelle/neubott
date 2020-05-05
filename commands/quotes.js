@@ -17,6 +17,12 @@ class Quotes extends Chariot.Command {
             example: ['quote', 'quote add <message id>'],
             inline: true
         }
+
+        FS.stat('./resources/quotes/', function(err) {
+            if (!err) { return }
+            else if (err.code === 'ENOENT') {FS.mkdir('./resources/quotes/', (err) => {
+                if (err) throw err;})};
+        })
     }
 
     /*
@@ -107,19 +113,146 @@ class Quotes extends Chariot.Command {
                 message.channel.createMessage(`❌ **${e.name}**: ${e.message}`);
             };
         // Chariot.Logger.event("Adding to quotes: args: '" + args.join(' ') + "'");
-        // let file = ( FS.existsSync(`./resources/quotes/${message.channel.guild.id}.json`) ) ? JSON.parse(FS.readFileSync(`./resources/quotes/${message.channel.guild.id}.json`, 'utf8')) : new Array(); //Load the file into memory and parse it
     }
 
     async add(message, args, chariot) {
+        let quote;
+        let author;
+        let authorid;
+        let timestamp;
+
+        if (validURL.isUri(args[0])) {
+        // if argument is an URL
+            try {
+                let msglink = new URL(args[0]);
+                let msglinkText = msglink.toString();
+                if (msglinkText.startsWith('https://discordapp.com/channels/')) {
+                    let url = args[0];
+                    let array = url.split('/');
+                    array = array.slice(4); // get the ID parts
+
+                    let msg = chariot.getMessage(array[1].toString(),array[2].toString()) // Get the message object
+                    msg.then((msg) => {
+                        Chariot.Logger.event("[QUOTE] Pulled message object");
+                        // console.log(msg);
+                        quote = msg.content;
+                        author = msg.member ? msg.member.nick : msg.author.username;
+                        timestamp = new Date(msg.timestamp);
+                        authorid = msg.member ? msg.member.id : msg.author.id;
+                    });
+                    await msg;
+                } else {throw new Error('WRONGURL')};
+            } catch (e) {
+                if (e.message === 'WRONGURL') {
+                    message.channel.createMessage("❌ That URL doesn't link to a Discord server.");
+                } else {message.channel.createMessage(`❌ **${e.name}**: ${e.message}`);};
+            };
+        } else {
+        // if argument is a string
+            try {
+                if (!args.join(' ').match(/^"(.+)" (.+)$/)) { message.channel.createMessage(`❌ That's not in a format I can use.\nTry: \`"Your quote" Author\``); return null;}
+                let params = args.join(' ').match(/^"(.+)" (.+)$/);
+                message.channel.guild.fetchAllMembers();
+                quote = params[1];
+                author = params[2].match(/^<@(\d+)>/) ? message.channel.guild.members.find(m => m.id == params[2].match(/^<@(\d+)>/)[1]).username : params[2] ;
+                authorid = params[2].match(/^<@(\d+)>/) ? params[2].match(/^<@(\d+)>/)[1] : null ;
+                timestamp = new Date();
+            } catch (e) {
+                message.channel.createMessage(`❌ **${e.name}**: ${e.message}`);
+            };
+        };
+
+        // Time to put this in a file
+        let file = ( FS.existsSync(`./resources/quotes/${message.channel.guild.id}.json`) ) ? JSON.parse(FS.readFileSync(`./resources/quotes/${message.channel.guild.id}.json`, 'utf8')) : new Array(); //Load the file into memory and parse it
+        let quoteObj = {
+            "quote" : quote,
+            "author" : author,
+            "author_id" : authorid,
+            "timestamp" : timestamp.valueOf()
+        }
+        try {
+            file.push(quoteObj);
+            FS.writeFileSync(`./resources/quotes/${message.channel.guild.id}.json`, JSON.stringify(file, null, 2), function (err) {
+                if (err) { Chariot.Logger.error('Write failed',`Could not write to /resources/quotes/${message.channel.guild.id}.json`) }
+            });
+            try { // construct the message
+                let tsFormat = new Intl.DateTimeFormat('en-us', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                })
+                timestamp = tsFormat.format(timestamp);
+                
+                let embed = {
+                    "title" : "Quote added successfully",
+                    "color" : 0x00ff00,
+                    "description": `"${quote}"\n—*${authorid ? "<@" + authorid + ">" : author} / ${timestamp} [#${file.length}]*`
+                }
         
+                let output = {
+                    "content" : '',
+                    "embed" : embed
+                    // "allowedMentions" : [{ "everyone" : false, "users": [authorid]}]
+                };
+                message.channel.createMessage(output);
+    
+            } catch (e) {
+                    message.channel.createMessage(`⁉ I saved your quote, but had some trouble getting back to you...\n**${e.name}**: ${e.message}`);
+                };
+        } catch (e) {
+            message.channel.createMessage(`❌ I couldn't save that...\n**${e.name}**: ${e.message}`);
+        }
     }
+
+    async undo(message, args, chariot) {
+        let file = ( FS.existsSync(`./resources/quotes/${message.channel.guild.id}.json`) ) ? JSON.parse(FS.readFileSync(`./resources/quotes/${message.channel.guild.id}.json`, 'utf8')) : new Array(); //Load the file into memory and parse it
+
+        let tsFormat = new Intl.DateTimeFormat('en-us', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        })
+
+        let undid = file.pop();
+        FS.writeFileSync(`./resources/quotes/${message.channel.guild.id}.json`, JSON.stringify(file, null, 2), function (err) {
+            if (err) { Chariot.Logger.error('Write failed',`Could not write to /resources/quotes/${message.channel.guild.id}.json`) }
+        });
+
+        undid.timestamp = tsFormat.format(undid.timestamp);
+        let embed = {
+            "title" : "Latest quote was deleted (shown below)",
+            "color" : 0xffff00,
+            "description": `"${undid.quote}"\n—*${undid.author_id ? "<@" + undid.author_id + ">" : undid.author} / ${undid.timestamp} [#${file.length+1}]*`
+        }
+
+        let output = {
+            "content" : '',
+            "embed" : embed,
+            "allowedMentions" : [{ "everyone" : false, "users": false}]
+        };
+        message.channel.createMessage(output);
+    }
+
 
     async execute(message, args, chariot) {
         try {
             var file = JSON.parse(FS.readFileSync(`./resources/quotes/${message.channel.guild.id}.json`, 'utf8')); //Load the file into memory and parse it
-            flatten(file);
-            var response = file[Math.floor(Math.random()*file.length)]; //Choose a response at random
-            message.channel.createMessage(":microphone2: " + response); //Print it
+            var rquote = file[Math.floor(Math.random()*file.length)]; //Choose a response at random
+            if (rquote.timestamp == null) { rquote.timestamp = "Long Ago" } else {
+                let tsFormat = new Intl.DateTimeFormat('en-us', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                })
+                rquote.timestamp = new Date(rquote.timestamp);
+                rquote.timestamp = tsFormat.format(rquote.timestamp);
+            }
+
+            let output = {
+                "content" : `"${rquote.quote}"\n—*${rquote.author_id ? "<@" + rquote.author_id + ">" : rquote.author} / ${rquote.timestamp} [#${file.indexOf(rquote)+1}]*`,
+                "allowedMentions" : [{ "everyone" : false, "users": false}]
+            };
+            message.channel.createMessage(output); //Print it
         } catch (e) {message.channel.createMessage("❌ There was a problem: `" + e.message + "`");}
     }
 }
