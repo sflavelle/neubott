@@ -16,8 +16,9 @@ class IdleSystem extends Chariot.Event {
         if (!this.client.idle) { this.client.idle = []; }
 
         function IdleContent(message) {
-            switch (Math.floor(Math.random()*4)) {
+            switch (Math.floor(Math.random()*5)) {
                 case 0: // death messages
+                case 1: 
                     let deaths = ( FS.existsSync('./resources/idle/deaths.json') ) ? JSON.parse(FS.readFileSync('./resources/idle/deaths.json', 'utf8')) : null;
                     let user = (message.member.nick) ? message.member.nick : message.author.username;
                     let server = message.channel.guild.name;
@@ -26,23 +27,38 @@ class IdleSystem extends Chariot.Event {
                     
                     let deathMessage = deaths[Math.floor(Math.random()*deaths.length)];
                     // Substitute variable names if necessary
-                    deathMessage = deathMessage.replace("`user`", user);
-                    deathMessage = deathMessage.replace("`server`", server);
-                    deathMessage = deathMessage.replace("`USER`", user.toUpperCase());
-                    deathMessage = deathMessage.replace("`SERVER`", server.toUpperCase());
+                    deathMessage = deathMessage.replace(/`user`/g, user);
+                    deathMessage = deathMessage.replace(/`server`/g, server);
+                    deathMessage = deathMessage.replace(/`USER`/g, user.toUpperCase());
+                    deathMessage = deathMessage.replace(/`SERVER`/g, server.toUpperCase());
 
-                    message.channel.createMessage(`🕑💀 ${deathMessage}\n*If you have any other deaths/failure messages for ${user}, or the last person to speak in the channel, check out* \`//help deaths\``);
+                    message.channel.createMessage(`🕑💀 ${deathMessage}\n\`//help deaths\``);
                     break;
-                case 1: // facts
-                case 2:
+                case 2: // facts
                     let facts = ( FS.existsSync('./resources/facts.json') ) ? JSON.parse(FS.readFileSync('./resources/facts.json', 'utf8')) : null;
                     let factsMessage = facts[Math.floor(Math.random()*facts.length)];
                     message.channel.createMessage(`🕑🎙 ${factsMessage}\n*Got anymore totally true for-real facts?* \`//help facts\``);
                     break;
-                case 3: // raocowisms
-                    let rao = ( FS.existsSync('./resources/raocowisms.json') ) ? JSON.parse(FS.readFileSync('./resources/raocowisms.json', 'utf8')) : null;
-                    let raoMessage = rao[Math.floor(Math.random()*rao.length)];
-                    message.channel.createMessage(`🕑<:catplanet:642306198443655178> ${raoMessage}\n*That was a demo, to see what happens when you use* \`//help raocowisms\``);
+                case 3: // quotes
+                case 4:
+                    var file = JSON.parse(FS.readFileSync(`./resources/quotes/${message.channel.guild.id}.json`, 'utf8')); //Load the file into memory and parse it
+                    var rquote = file[Math.floor(Math.random()*file.length)]; //Choose a response at random
+                    if (rquote.timestamp == null) { rquote.timestamp = "in the Before Times" } //for old imported quotes
+                    else {
+                        let tsFormat = new Intl.DateTimeFormat('en-us', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
+                        })
+                        rquote.timestamp = new Date(rquote.timestamp);
+                        rquote.timestamp = tsFormat.format(rquote.timestamp);
+                    }
+        
+                    let output = {
+                        "content" : `🕑 "${rquote.quote}"\n—*${rquote.author_id ? "<@" + rquote.author_id + ">" : rquote.author} / ${rquote.timestamp} [#${file.indexOf(rquote)+1}/${file.length}]*`,
+                        "allowedMentions" : [{ "everyone" : false, "users": false}]
+                    };
+                    message.channel.createMessage(output); //Print it
                     break;
                 default:
                     break;
@@ -71,17 +87,17 @@ class IdleSystem extends Chariot.Event {
 
         if (!message.author.bot && !message.content.startsWith(this.client.prefix)) {
             switch (message.channel.id) {
-                case "206734382990360576": // #meep
+                case "206734382990360576": // Neutopia #meep
                     clearTimeout(this.client.idle["206734382990360576"]); //I have to clear the timeout, before I set it...
                     // Chariot.Logger.event(`[Idle] new message in ${message.channel.name}`);
                     this.client.idle["206734382990360576"] = setTimeout(IdleContent, 6*60*60*1000, message); //6 hours
                     break;
-                case "383151258065698816": // #bott-playground
+                case "383151258065698816": // Neutopia #bott-playground
                     clearTimeout(this.client.idle["383151258065698816"]);
                     // Chariot.Logger.event(`[Idle] new message in ${message.channel.name}`);
                     this.client.idle["383151258065698816"] = setTimeout(IdleContent, 45*60*1000, message); //45 minutes
                     break;
-                case "538503736423612426": // #splatoon
+                case "538503736423612426": // Neutopia #splatoon
                     clearTimeout(this.client.idle["538503736423612426"]);
                     // Chariot.Logger.event(`[Idle] new message in ${message.channel.name}`);
                     this.client.idle["538503736423612426"] = setTimeout(IdleSplatoon, 6*60*60*1000, message); //6 hours
@@ -90,6 +106,16 @@ class IdleSystem extends Chariot.Event {
                     clearTimeout(this.client.idle["705685455143829574"]); //I have to clear the timeout, before I set it...
                     // Chariot.Logger.event(`[Idle] new message in ${message.channel.name}`);
                     this.client.idle["705685455143829574"] = setTimeout(IdleContent, 6*60*60*1000, message); //6 hours
+                    break;
+                case "124680630075260928": //General Chat #general
+                    clearTimeout(this.client.idle["124680630075260928"]); //I have to clear the timeout, before I set it...
+                    // Chariot.Logger.event(`[Idle] new message in ${message.channel.name}`);
+                    this.client.idle["124680630075260928"] = setTimeout(IdleContent, 6*60*60*1000, message); //6 hours
+                    break;
+                case "220390355487424512": //General Chat #botworkshop
+                    clearTimeout(this.client.idle["220390355487424512"]); //I have to clear the timeout, before I set it...
+                    // Chariot.Logger.event(`[Idle] new message in ${message.channel.name}`);
+                    this.client.idle["220390355487424512"] = setTimeout(IdleContent, 45*60*1000, message); //45 minutes
                     break;
                 default:
                     break;
