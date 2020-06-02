@@ -36,7 +36,7 @@ class DeathMsgs extends Chariot.Command {
         FS.writeFileSync('./resources/idle/deaths.json', JSON.stringify(file, null, 2), function (err) {
             if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/idle/deaths.json') }
         })
-        message.channel.createMessage("✅ Saved! I now have **" + file.length + "** death messages.\nHere's what I just added:\n" + newresponse);
+        message.channel.createMessage("✅ Saved! I now have **" + file.length + "** death messages.\nHere's what I just added:\n\`" + newresponse + "\`");
     }
 
     async remove(message, args, chariot){
