@@ -2,6 +2,7 @@ const Chariot = require('chariot.js');
 const FS = require("fs");
 const flatten = require('array-flatten');
 const validURL = require('valid-url');
+const moment = require('moment');
 
 class Quotes extends Chariot.Command {
     constructor() {
@@ -159,8 +160,8 @@ class Quotes extends Chariot.Command {
                 let params = args.join(' ').match(/^"(.+)" (.+)$/);
                 message.channel.guild.fetchAllMembers();
                 quote = params[1];
-                author = params[2].match(/^<@(\d+)>/) ? message.channel.guild.members.find(m => m.id == params[2].match(/^<@(\d+)>/)[1]).username : params[2] ;
-                authorid = params[2].match(/^<@(\d+)>/) ? params[2].match(/^<@(\d+)>/)[1] : null ;
+                author = params[2].match(/^<@!?(\d+)>/) ? message.channel.guild.members.find(m => m.id == params[2].match(/^<@!?(\d+)>/)[1]).username : params[2] ;
+                authorid = params[2].match(/^<@!?(\d+)>/) ? params[2].match(/^<@!?(\d+)>/)[1] : null ;
                 timestamp = new Date();
             } catch (e) {
                 message.channel.createMessage(`❌ **${e.name}**: ${e.message}`);
@@ -296,6 +297,7 @@ class Quotes extends Chariot.Command {
         let url;
         let msg;
         let oldTS;
+        let newTS;
         let file = ( FS.existsSync(`./resources/quotes/${message.channel.guild.id}.json`) ) ? JSON.parse(FS.readFileSync(`./resources/quotes/${message.channel.guild.id}.json`, 'utf8')) : new Array(); //Load the file into memory and parse it
 
         if (args[0] === "ts") {
@@ -305,27 +307,37 @@ class Quotes extends Chariot.Command {
                 message.channel.createMessage(`If you'd like to help, I have about **${file.length}** quotes that don't have any timestamp...`);
                 return null;
             }
-            else if (args.length >= 3 && Number.parseInt(args[1].match(/^(\d+)$/)) && args[2].startsWith('https://')) {
+            else if (args.length >= 3 && Number.parseInt(args[1].match(/^(\d+)$/))) {
                 i = Number.parseInt(args[1].match(/^(\d+)$/))-1;
-                try {var editedQuote = file[i-1];} catch (e) {message.channel.createMessage(`❌ I only have ${file.length} quotes.`);} 
-                oldTS = editedQuote.timestamp;
+                try {oldTS = file[i-1].timestamp;} catch (e) { if (!file[i-1]) {message.channel.createMessage(`❌ I only have ${file.length} quotes.`)};} 
 
                 try {
                     if (args[2].startsWith('https://discordapp.com/channels/') || args[2].startsWith('https://canary.discordapp.com/channels/') || args[2].startsWith('https://ptb.discordapp.com/channels/')) {
                         url = args[2];
-                    } else {throw new Error("WRONGURL")};
+
+                        let array = url.split('/');
+                        array = array.slice(4); // get the ID parts
+
+                        msg = await chariot.getMessage(array[1].toString(),array[2].toString()); // Get the message object
+                        if (msg == undefined) {
+                            if (!this.client.guilds.filter(g => g.id === array[0].toString())) { throw new Error("That's a correct URL, but it links to a server I can't see.");}
+                            else if (!this.client.guilds.filter(g => g.id === array[0].toString()).channels.filter(c => c.id === array[1].toString())) { throw new Error("That's a correct URL, but it links to a channel that I either can't see, or that doesn't exist."); }
+                            else { throw new Error("I'm not sure that message exists."); return null; }
+                        }
+
+                        file[i].timestamp = new Date(msg.timestamp).valueOf();
+                        newTS = new Date(msg.timestamp).valueOf();
+                    } else if (args[2].startsWith('http')) {throw new Error("WRONGURL")}
+                    else if (moment(args.slice(2).join(' '))){
+                        try {
+                            let ts = moment(args.slice(2).join(' '), ["MMMM D, YYYY", "MMM D, YYYY", "MMMM DD, YYYY", "MMM DD, YYYY"]);
+                            file[i].timestamp = ts.valueOf();
+                            newTS = ts.valueOf();
+                        } catch (e) {throw new Error("Pass me a valid date.")}
+                        
+                    } else {throw new Error("Pass me a valid date.")}
                     
-                    let array = url.split('/');
-                    array = array.slice(4); // get the ID parts
 
-                    msg = await chariot.getMessage(array[1].toString(),array[2].toString()); // Get the message object
-                    if (msg == undefined) {
-                        if (!this.client.guilds.filter(g => g.id === array[0].toString())) { throw new Error("That's a correct URL, but it links to a server I can't see.");}
-                        else if (!this.client.guilds.filter(g => g.id === array[0].toString()).channels.filter(c => c.id === array[1].toString())) { throw new Error("That's a correct URL, but it links to a channel that I either can't see, or that doesn't exist."); }
-                        else { throw new Error("I'm not sure that message exists."); return null; }
-                    }
-
-                    file[i].timestamp = new Date(msg.timestamp).valueOf();
                     FS.writeFileSync(`./resources/quotes/${message.channel.guild.id}.json`, JSON.stringify(file, null, 2), function (err) {
                         if (err) { Chariot.Logger.error('Write failed',`Could not write to /resources/quotes/${message.channel.guild.id}.json`) }
                     });
@@ -343,12 +355,12 @@ class Quotes extends Chariot.Command {
                             else {message.channel.createMessage(`❌ **${e.name}**: ${e.message}`);}
                         }
                         
-                        msg.timestamp = tsFormat.format(msg.timestamp);
+                        newTS = tsFormat.format(newTS);
 
                         let embed = {
                             "title" : "Quote modified successfully",
                             "color" : 0xffff00,
-                            "description": `"${file[i].quote}"\n—*${file[i].authorid ? "<@" + file[i].authorid + ">" : file[i].author} / ~~${oldTS}~~ ${msg.timestamp} [#${i+1}]*`
+                            "description": `"${file[i].quote}"\n—*${file[i].authorid ? "<@" + file[i].authorid + ">" : file[i].author} / ~~${oldTS}~~ ${newTS} [#${i+1}]*`
                         }
                 
                         let output = {
@@ -375,7 +387,11 @@ class Quotes extends Chariot.Command {
         try {
             var file = JSON.parse(FS.readFileSync(`./resources/quotes/${message.channel.guild.id}.json`, 'utf8')); //Load the file into memory and parse it
             let filtered;
-            if (args[0] === "me") { // Get only "my" quotes
+            let searchString = args.join(' ');
+            if (args.length === 0 | args == null) { // get everything
+                var rquote = file[Math.floor(Math.random()*file.length)]; //Choose a response at random
+            }
+            else if (args[0] === "me") { // Get only "my" quotes
                 filtered = file.filter(q => q.author_id === message.author.id);
                 if (filtered.length === 0) {message.channel.createMessage("❌ You don't have any quotes!"); return null};
                 var rquote = filtered[Math.floor(Math.random()*filtered.length)]; //RNG
@@ -385,25 +401,30 @@ class Quotes extends Chariot.Command {
                 try {var rquote = file[i-1];} catch (e) {message.channel.createMessage(`❌ I only have ${file.length} quotes.`);}
             }
             else if (args.join(' ').match(/^<@(\d+)>/)) { // Get only "this user"'s quotes
-                message.channel.guild.fetchAllMembers();
+                await message.channel.guild.fetchAllMembers();
                 filtered = file.filter(q => q.author_id === args.join(' ').match(/^<@(\d+)>/)[1].toString());
                 if (filtered.length === 0) {message.channel.createMessage("❌ They don't have any quotes!"); return null};
                 var rquote = filtered[Math.floor(Math.random()*filtered.length)]; //RNG
             } 
-            // else if (file.filter(q => q.author.includes(args.join(' '))) || message.channel.guild.members.filter(m => m.username == args.join(' ')) || message.channel.guild.members.filter(m => m.nick == args.join(' '))) { // Same as above, but with names
-            //     message.channel.guild.fetchAllMembers();
-            //     filtered = (function() {
-            //         let result;
-            //         if (file.filter(q => q.author.includes(args.join(' ')))) {result = file.filter(q => q.author.includes(args.join(' '))); return result;}
-            //         else if (message.channel.guild.members.filter(m => m.username == args.join(' '))) {result = message.channel.guild.members.filter(m => m.username == args.join(' ')); return result;}
-            //         else if (message.channel.guild.members.filter(m => m.nick == args.join(' '))) {result = message.channel.guild.members.filter(m => m.nick == args.join(' ')); return result;}
-            //         else return [];
-            //     })();
-            //     if (filtered.length === 0) {message.channel.createMessage("❌ They don't have any quotes!"); return null};
-            //     var rquote = filtered[Math.floor(Math.random()*filtered.length)]; //RNG
-            // }  
-            else { // Get every quote
-                var rquote = file[Math.floor(Math.random()*file.length)]; //Choose a response at random
+            else if (message.channel.guild.members.filter(m => m.username.includes(searchString)) || message.channel.guild.members.filter(m => m.nick.includes(searchString))) { // Same as above, but with names
+                await message.channel.guild.fetchAllMembers();
+                filtered = (function() {
+                    let result;
+                    if (message.channel.guild.members.filter(m => m.username.includes(searchString))) {result = file.filter(q => q.author_id === message.channel.guild.members.find(m => m.username.includes(searchString).id)); return result;}
+                    else if (message.channel.guild.members.filter(m => m.nick.includes(searchString))) {result = file.filter(q => q.author_id === message.channel.guild.members.find(m => m.nick.includes(searchString).id)); return result;}
+                    else return [];
+                })();
+                if (filtered.length === 0) {message.channel.createMessage("❌ They don't have any quotes!"); return null};
+                var rquote = filtered[Math.floor(Math.random()*filtered.length)]; //RNG
+            }  
+            else if (file.filter(q => q.author_id === null && q.author.includes(searchString)) != -1) { // Same as above, but with names
+                filtered = (function() {
+                    let result;
+                    if (file.filter(q => q.author.includes(searchString))) {result = file.filter(q => q.author.includes(searchString)); return result;}
+                    else return [];
+                })();
+                if (filtered.length === 0) {message.channel.createMessage("❌ They don't have any quotes!"); return null};
+                var rquote = filtered[Math.floor(Math.random()*filtered.length)]; //RNG
             }
 
             if (rquote.author_id) {if (!message.channel.guild.members.find(m => m.id === rquote.author_id)) {await message.channel.guild.fetchAllMembers();}}
@@ -422,7 +443,7 @@ class Quotes extends Chariot.Command {
                 "allowedMentions" : [{ "everyone" : false, "users": false}]
             };
             message.channel.createMessage(output); //Print it
-        } catch (e) {message.channel.createMessage("❌ There was a problem: `" + e.message + "`");}
+        } catch (e) {message.channel.createMessage(`❌ There was a problem: \`${e.message}\``);}
     }
 }
 
