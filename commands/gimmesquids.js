@@ -20,7 +20,11 @@ class GimmeSquids extends Chariot.Command {
 
     async add(message, args, chariot){
         Chariot.Logger.event("Adding to splat: args: '" + args.join(' ') + "'");
-        var file = (FS.existsSync('./resources/splat.json')) ? JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8')) : new Array(); //Load the file into memory and parse it
+        let filename;
+        if (message.channel.nsfw) {filename = 'splat.nsfw.json'} else {filename = 'splat.json'};
+        //Load the file into memory and parse it
+        let file = (FS.existsSync('./resources/' + filename)) ? JSON.parse(FS.readFileSync('./resources/' + filename, 'utf8')) : new Array();
+
         var newresponse = args.join(' ');
         const searchindex = (element) => element.includes(newresponse);
         if (file.findIndex(searchindex) !== -1) {
@@ -30,17 +34,20 @@ class GimmeSquids extends Chariot.Command {
             return;
         };
         file.push(newresponse);
-        FS.writeFileSync('./resources/splat.json', JSON.stringify(file, null, 2), function (err) {
-            if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/splat.json') }
+        FS.writeFileSync('./resources/' + filename, JSON.stringify(file, null, 2), function (err) {
+            if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/' + filename) }
         })
-        message.channel.createMessage("✅ Saved! I now have **" + file.length + "** cephalopods.\nHere's what I just added: `" + newresponse + "`");
+        message.channel.createMessage(`✅ Saved! I now have **${file.length}** ${message.channel.nsfw ? "lewd " : ""}cephalopods.\nHere's what I just added: \`${newresponse}\``);
     }
 
     async remove(message, args, chariot){
         Chariot.Logger.event("Removing from splat: args: '" + args.join(' ') + "'");
+        let filename;
+        if (message.channel.nsfw) {filename = 'splat.nsfw.json'} else {filename = 'splat.json'};
+
         try {
-            var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8'));
-        } catch (e) {if (e.code === "ENOENT") {message.channel.createMessage("💥 I don't have anything yet!"); return null;}};
+            var file = JSON.parse(FS.readFileSync('./resources/' + filename, 'utf8'));
+        } catch (e) {if (e.code === "ENOENT" || file.length === 0) {message.channel.createMessage(`💥 I don't have anything yet!${message.channel.nsfw ? "\nKeep in mind that the image pool is different for NSFW channels." : ""}`); return null;}};
         var searchtext = args.join(' ');
         const searchindex = (element) => element.includes(searchtext);
         if (file.findIndex(searchindex) !== -1) {
@@ -59,10 +66,10 @@ class GimmeSquids extends Chariot.Command {
                 let deletedtext = file[delIndex];
 
                 file.splice(delIndex,1);
-                FS.writeFileSync('./resources/splat.json', JSON.stringify(file, null, 2), function (err) {
-                    if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/splat.json') }
+                FS.writeFileSync('./resources/' + filename, JSON.stringify(file, null, 2), function (err) {
+                    if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/' + filename) }
                 })
-                message.channel.createMessage("<:Splatted:606703438730100766> Deleted. I now have **" + file.length + "** cephalopods.\nWe removed: `" + deletedtext + "`");
+                message.channel.createMessage(`<:Splatted:606703438730100766> Deleted. I now have **${file.length}** ${message.channel.nsfw ? "lewd " : ""}cephalopods.\nWe removed:\`${deletedtext}\``);
                 Chariot.Logger.event(`Removing from splat: removed`);
                 }} else {
                 message.channel.createMessage("💥 Nothing matches that.");
@@ -72,14 +79,18 @@ class GimmeSquids extends Chariot.Command {
     }
 
     async execute(message, args, chariot) {
+
+        let filename;
+        if (message.channel.nsfw) {filename = 'splat.nsfw.json'} else {filename = 'splat.json'};
+
         try {
-            var file = JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8'));
-        } catch (e) {if (e.code === "ENOENT") {message.channel.createMessage("💥 I don't have anything yet!"); return null;}};
+            var file = JSON.parse(FS.readFileSync('./resources/' + filename, 'utf8'));
+        } catch (e) {if (e.code === "ENOENT"|| file.length === 0) {message.channel.createMessage(`💥 I don't have anything yet!${message.channel.nsfw ? "\nKeep in mind that the image pool is different for NSFW channels." : ""}`); return null;}};
 
         if (args === undefined || args.length == 0) {}
         else {
             file = file.filter(link => link.toLowerCase().includes(args.join(" ")));
-            if (file.length == 0) {message.channel.createMessage("💥 Nothing matches that. *Is the search term in lowercase?*"); return null;}
+            if (file.length == 0) {message.channel.createMessage(`💥 Nothing matches that. *Is the search term in lowercase?*${message.channel.nsfw ? "\nKeep in mind that the image pool is different for NSFW channels." : ""}`); return null;}
         }
         var response = file[Math.floor(Math.random()*file.length)]; //Choose a response at random
         message.channel.createMessage(response); //Print it
