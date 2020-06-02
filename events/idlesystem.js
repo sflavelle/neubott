@@ -22,7 +22,7 @@ class IdleSystem extends Chariot.Event {
                     var global = JSON.parse(FS.readFileSync('./resources/deaths/global.json', 'utf8')); //Load the file into memory and parse it
                     var local = FS.existsSync(`./resources/deaths/${message.channel.guild.id}.json`) ? JSON.parse(FS.readFileSync(`./resources/deaths/${message.channel.guild.id}.json`, 'utf8')) : new Array();
                     let deaths = global.concat(local);
-                    
+
                     let user = (message.member.nick) ? message.member.nick : message.author.username;
                     let server = message.channel.guild.name;
 
@@ -69,25 +69,6 @@ class IdleSystem extends Chariot.Event {
             Chariot.Logger.event(`[Idle] executed idle routine in ${message.channel.name}`);
         };
 
-        function IdleSplatoon(message) {
-            switch (Math.floor(Math.random()*2)) {
-                case 0: // #splatoon gimme squids
-                    if (message.channel.name === 'splatoon') {
-                        let AliasedCommand = this.client.commands.get('gimmesquids');
-                        AliasedCommand.execute(message, args, chariot);
-                        break;
-                    };
-                case 1: // #splatoon current schedule
-                let splat = ( FS.existsSync('./resources/splat.json') ) ? JSON.parse(FS.readFileSync('./resources/splat.json', 'utf8')) : null;
-                let splatMessage = splat[Math.floor(Math.random()*splat.length)];
-                message.channel.createMessage(`🕑🎙 ${splatMessage}\n*You can add more of these images with* \`//help squids\``);
-                break;
-                default:
-                    break;
-            };
-            Chariot.Logger.event(`[Idle] executed idle routine in ${message.channel.name}`);
-        }
-
         if (!message.author.bot && !message.content.startsWith(this.client.prefix)) {
             switch (message.channel.id) {
                 case "206734382990360576": // Neutopia #meep
@@ -100,10 +81,10 @@ class IdleSystem extends Chariot.Event {
                     // Chariot.Logger.event(`[Idle] new message in ${message.channel.name}`);
                     this.client.idle["383151258065698816"] = setTimeout(IdleContent, 45*60*1000, message); //45 minutes
                     break;
-                case "538503736423612426": // Neutopia #splatoon
-                    clearTimeout(this.client.idle["538503736423612426"]);
+                case "538502185072328724": // Neutopia #games-general
+                    clearTimeout(this.client.idle["538502185072328724"]);
                     // Chariot.Logger.event(`[Idle] new message in ${message.channel.name}`);
-                    this.client.idle["538503736423612426"] = setTimeout(IdleSplatoon, 6*60*60*1000, message); //6 hours
+                    this.client.idle["538502185072328724"] = setTimeout(IdleContent, 6*60*60*1000, message); //6 hours
                     break;
                 case "705685455143829574": // Neubott Development #testing
                     clearTimeout(this.client.idle["705685455143829574"]); //I have to clear the timeout, before I set it...
