@@ -19,7 +19,10 @@ class IdleSystem extends Chariot.Event {
             switch (Math.floor(Math.random()*5)) {
                 case 0: // death messages
                 case 1: 
-                    let deaths = ( FS.existsSync('./resources/idle/deaths.json') ) ? JSON.parse(FS.readFileSync('./resources/idle/deaths.json', 'utf8')) : null;
+                    var global = JSON.parse(FS.readFileSync('./resources/deaths/global.json', 'utf8')); //Load the file into memory and parse it
+                    var local = FS.existsSync(`./resources/deaths/${message.channel.guild.id}.json`) ? JSON.parse(FS.readFileSync(`./resources/deaths/${message.channel.guild.id}.json`, 'utf8')) : new Array();
+                    let deaths = global.concat(local);
+                    
                     let user = (message.member.nick) ? message.member.nick : message.author.username;
                     let server = message.channel.guild.name;
 
@@ -43,7 +46,8 @@ class IdleSystem extends Chariot.Event {
                 case 4:
                     var file = JSON.parse(FS.readFileSync(`./resources/quotes/${message.channel.guild.id}.json`, 'utf8')); //Load the file into memory and parse it
                     var rquote = file[Math.floor(Math.random()*file.length)]; //Choose a response at random
-                    if (rquote.timestamp == null) { rquote.timestamp = "in the Before Times" } //for old imported quotes
+                    if (rquote.author_id) {if (!message.channel.guild.members.find(m => m.id === rquote.author_id)) {message.channel.guild.fetchAllMembers();}}
+                    if (rquote.timestamp == null) { rquote.timestamp = `Octember 32, ${new Date().getFullYear()}` } //for old imported quotes
                     else {
                         let tsFormat = new Intl.DateTimeFormat('en-us', {
                             month: 'long',
@@ -53,9 +57,8 @@ class IdleSystem extends Chariot.Event {
                         rquote.timestamp = new Date(rquote.timestamp);
                         rquote.timestamp = tsFormat.format(rquote.timestamp);
                     }
-        
                     let output = {
-                        "content" : `🕑 "${rquote.quote}"\n—*${rquote.author_id ? "<@" + rquote.author_id + ">" : rquote.author} / ${rquote.timestamp} [#${file.indexOf(rquote)+1}/${file.length}]*`,
+                        "content" : `"${rquote.quote}"\n—*${rquote.author_id ? (message.channel.guild.members.find(m => m.id === rquote.author_id) ? "<@" + rquote.author_id + ">" : rquote.author) : rquote.author} / ${rquote.timestamp} [#${file.indexOf(rquote)+1}/${file.length}]*`,
                         "allowedMentions" : [{ "everyone" : false, "users": false}]
                     };
                     message.channel.createMessage(output); //Print it
