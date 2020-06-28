@@ -45,7 +45,7 @@ class DeathMsgs extends Chariot.Command {
         FS.writeFileSync(`./resources/deaths/${message.channel.guild.id}.json`, JSON.stringify(file, null, 2), function (err) {
             if (err) { Chariot.Logger.error('Write failed',`Could not write to resources/deaths/${message.channel.guild.id}.json`) }
         })
-        message.channel.createMessage("✅ Saved! I now have **" + file.length + "** death messages.\nHere's what I just added:\n\`" + newresponse + "\`");
+        message.channel.createMessage("✅ Saved! I now have **" + file.length + "** death messages.\nHere's what I just added:\n`" + newresponse.replace('`', '\`') + "`");
     }
 
     async remove(message, args, chariot){
@@ -72,7 +72,7 @@ class DeathMsgs extends Chariot.Command {
                 FS.writeFileSync(`./resources/deaths/${message.channel.guild.id}.json`, JSON.stringify(file, null, 2), function (err) {
                     if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/idle/deaths.json') }
                 })
-                message.channel.createMessage("This message has been killed. **" + file.length + "** deaths remaining.\nWe removed: `" + deletedtext + "`");
+                message.channel.createMessage("This message has been killed. **" + file.length + "** deaths remaining.\nWe removed: `" + deletedtext.replace('`', '\`') + "`");
                 Chariot.Logger.event(`Removing from deaths: removed`);
                 }} else {
                 message.channel.createMessage("💥 Nothing matches that.");
@@ -97,7 +97,7 @@ class DeathMsgs extends Chariot.Command {
         FS.writeFileSync('./resources/deaths/global.json', JSON.stringify(file, null, 2), function (err) {
             if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/deaths/global.json') }
         })
-        message.channel.createMessage("✅ Saved! I now have **" + file.length + "** death messages.\nHere's what I just added:\n\`" + newresponse + "\`");
+        message.channel.createMessage("✅ Saved! I now have **" + file.length + "** global death messages.\nHere's what I just added:\n`" + newresponse.replace('`', '\`') + "`");
     }
 
     async gremove(message, args, chariot){
@@ -126,7 +126,7 @@ class DeathMsgs extends Chariot.Command {
                 FS.writeFileSync('./resources/deaths/global.json', JSON.stringify(file, null, 2), function (err) {
                     if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/deaths/global.json') }
                 })
-                message.channel.createMessage("This message has been killed. **" + file.length + "** deaths remaining.\nWe removed: `" + deletedtext + "`");
+                message.channel.createMessage("This global message has been killed. **" + file.length + "** deaths remaining.\nWe removed: `" + deletedtext.replace('`', '\`') + "`");
                 Chariot.Logger.event(`Removing from deaths: removed`);
                 }} else {
                 message.channel.createMessage("💥 Nothing matches that.");
@@ -138,7 +138,18 @@ class DeathMsgs extends Chariot.Command {
     async execute(message, args, chariot) {
             var global = JSON.parse(FS.readFileSync('./resources/deaths/global.json', 'utf8')); //Load the file into memory and parse it
             var local = FS.existsSync(`./resources/deaths/${message.channel.guild.id}.json`) ? JSON.parse(FS.readFileSync(`./resources/deaths/${message.channel.guild.id}.json`, 'utf8')) : new Array();
-            message.channel.createMessage(`There are **${global.concat(local).length}** death messages at the moment (including **${global.length}** messages used globally).\nThese are displayed at random when <#${message.channel.id}> is inactive.`);
+            var merged = global.concat(local);
+            var dedmsg = merged[Math.floor(Math.random()*merged.length)];
+
+            let user = (message.member.nick) ? message.member.nick : message.author.username;
+            let server = message.channel.guild.name;
+
+            dedmsg = dedmsg.replace(/`user`/g, user);
+            dedmsg = dedmsg.replace(/`server`/g, server);
+            dedmsg = dedmsg.replace(/`USER`/g, user.toUpperCase());
+            dedmsg = dedmsg.replace(/`SERVER`/g, server.toUpperCase());
+
+            message.channel.createMessage(`There are **${merged.length}** death messages at the moment (including **${global.length}** messages used globally).\nHere's a random one: *${dedmsg}*\nThese are displayed at random when certain channels are inactive.`);
     }
 }
 

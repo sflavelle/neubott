@@ -9,6 +9,7 @@ class AddQuote extends Chariot.Command {
         this.cooldown = 3;
         this.help = {
             message: `Shortcut for //quote add.`,
+            visible: false
         }
     }
 
