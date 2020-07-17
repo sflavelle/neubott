@@ -81,8 +81,8 @@ class Quotes extends Chariot.Command {
         } else {
         // if argument is a string
             try {
-                if (!args.join(' ').match(/^"(.+)" (.+)$/)) { message.channel.createMessage(`❌ That's not in a format I can use.\nTry: \`"Your quote" Author\``); return null;}
-                let params = args.join(' ').match(/^"(.+)" (.+)$/);
+                if (!message.content.match(/"(.+)" (.+)$/s)) { message.channel.createMessage(`❌ That's not in a format I can use.\nTry: \`"Your quote" Author\``); return null;}
+                let params = message.content.match(/"(.+)" (.+)$/s);
                 quote = params[1];
                 author = params[2].match(/^<@(\d+)>/) ? params[2].match(/^<@(\d+)>/)[1] : params[2] ;
                 authorid = params[2].match(/^<@(\d+)>/) ? params[2].match(/^<@(\d+)>/)[1] : null ;
@@ -156,8 +156,8 @@ class Quotes extends Chariot.Command {
         } else {
         // if argument is a string
             try {
-                if (!args.join(' ').match(/^"(.+)" (.+)$/)) { message.channel.createMessage(`❌ That's not in a format I can use.\nTry: \`"Your quote" Author\``); return null;}
-                let params = args.join(' ').match(/^"(.+)" (.+)$/);
+                if (!message.content.match(/"(.+)" (.+)$/s)) { message.channel.createMessage(`❌ That's not in a format I can use.\nTry: \`"Your quote" Author\``); return null;}
+                let params = message.content.match(/"(.+)" (.+)$/s);
                 message.channel.guild.fetchAllMembers();
                 quote = params[1];
                 author = params[2].match(/^<@!?(\d+)>/) ? message.channel.guild.members.find(m => m.id == params[2].match(/^<@!?(\d+)>/)[1]).username : params[2] ;
@@ -388,36 +388,54 @@ class Quotes extends Chariot.Command {
             var file = JSON.parse(FS.readFileSync(`./resources/quotes/${message.channel.guild.id}.json`, 'utf8')); //Load the file into memory and parse it
             let filtered;
             let searchString = args.join(' ');
-            if (args.length === 0 | args == null) { // get everything
+            if (args.length === 0 | args == null) { 
+                // get everything
                 var rquote = file[Math.floor(Math.random()*file.length)]; //Choose a response at random
             }
-            else if (args[0] === "me") { // Get only "my" quotes
+            else if (args[0] === "me") { 
+                // Get only "my" quotes
                 filtered = file.filter(q => q.author_id === message.author.id);
                 if (filtered.length === 0) {message.channel.createMessage("❌ You don't have any quotes!"); return null};
                 var rquote = filtered[Math.floor(Math.random()*filtered.length)]; //RNG
             } 
-            else if (args.join(' ').match(/^(\d+)$/)) { // Get this quote number
+            else if (args[0] === "guild") {
+                try { file = JSON.parse(FS.readFileSync(`./resources/quotes/${args[1]}.json`, 'utf8'));} //Load the file into memory and parse it
+                catch (e) {message.channel.createMessage(`❌ There was a problem: \`${e.message}\``);} 
+
+                if (args.length === 2) { var rquote = file[Math.floor(Math.random()*file.length)]; }
+                else if (args.length === 3 | args[2].match(/^(\d+)$/)) { 
+                    // Get this quote number
+                    let i = Number.parseInt(args[2].match(/^(\d+)$/));
+                    try {var rquote = file[i-1]; if (rquote === undefined) {throw new error("doesn't exist")}} catch (e) {message.channel.createMessage(`❌ I only have ${file.length} quotes from that server.`); return false;}
+                } 
+
+            }
+            else if (args.join(' ').match(/^(\d+)$/)) { 
+                // Get this quote number
                 let i = Number.parseInt(args[0].match(/^(\d+)$/));
                 try {var rquote = file[i-1];} catch (e) {message.channel.createMessage(`❌ I only have ${file.length} quotes.`);}
             }
-            else if (args.join(' ').match(/^<@(\d+)>/)) { // Get only "this user"'s quotes
+            else if (args.join(' ').match(/^<@(\d+)>/)) { 
+                // Get only "this user"'s quotes
                 await message.channel.guild.fetchAllMembers();
                 filtered = file.filter(q => q.author_id === args.join(' ').match(/^<@(\d+)>/)[1].toString());
                 if (filtered.length === 0) {message.channel.createMessage("❌ They don't have any quotes!"); return null};
                 var rquote = filtered[Math.floor(Math.random()*filtered.length)]; //RNG
             } 
-            else if (message.channel.guild.members.filter(m => m.username.includes(searchString)) || message.channel.guild.members.filter(m => m.nick.includes(searchString))) { // Same as above, but with names
-                await message.channel.guild.fetchAllMembers();
-                filtered = (function() {
-                    let result;
-                    if (message.channel.guild.members.filter(m => m.username.includes(searchString))) {result = file.filter(q => q.author_id === message.channel.guild.members.find(m => m.username.includes(searchString).id)); return result;}
-                    else if (message.channel.guild.members.filter(m => m.nick.includes(searchString))) {result = file.filter(q => q.author_id === message.channel.guild.members.find(m => m.nick.includes(searchString).id)); return result;}
-                    else return [];
-                })();
-                if (filtered.length === 0) {message.channel.createMessage("❌ They don't have any quotes!"); return null};
-                var rquote = filtered[Math.floor(Math.random()*filtered.length)]; //RNG
-            }  
-            else if (file.filter(q => q.author_id === null && q.author.includes(searchString)) != -1) { // Same as above, but with names
+            // else if (message.channel.guild.members.filter(m => m.username.includes(searchString)) || message.channel.guild.members.filter(m => m.nick.includes(searchString))) { 
+            //     // Same as above, but with names
+            //     await message.channel.guild.fetchAllMembers();
+            //     filtered = (function() {
+            //         let result;
+            //         if (message.channel.guild.members.filter(m => m.username.includes(searchString))) {result = file.filter(q => q.author_id === message.channel.guild.members.find(m => m.username.includes(searchString).id)); return result;}
+            //         else if (message.channel.guild.members.filter(m => m.nick.includes(searchString))) {result = file.filter(q => q.author_id === message.channel.guild.members.find(m => m.nick.includes(searchString).id)); return result;}
+            //         else return [];
+            //     })();
+            //     if (filtered.length === 0) {message.channel.createMessage("❌ They don't have any quotes!"); return null};
+            //     var rquote = filtered[Math.floor(Math.random()*filtered.length)]; //RNG
+            // }  
+            else if (file.filter(q => q.author_id === null && q.author.includes(searchString)) != -1) {
+                // Same as above, but with names
                 filtered = (function() {
                     let result;
                     if (file.filter(q => q.author.includes(searchString))) {result = file.filter(q => q.author.includes(searchString)); return result;}
