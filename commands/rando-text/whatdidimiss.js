@@ -22,6 +22,7 @@ class WhatDidIMiss extends Chariot.Command {
         Chariot.Logger.event("Adding to whatdidimiss: args: '" + args.join(' ') + "'");
         var file = JSON.parse(FS.readFileSync('./resources/whatimissed.json', 'utf8')); //Load the file into memory and parse it
         var newresponse = args.join(' ');
+        if (newresponse.length == 0) { message.channel.createMessage("There's nothing here!"); Chariot.Logger.event("whatdidimiss: Sorry nothing"); return }
         file.push(newresponse);
         FS.writeFileSync('./resources/whatimissed.json', JSON.stringify(file, null, 2), function (err) {
             if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/whatimissed.json') }
