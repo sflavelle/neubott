@@ -21,7 +21,7 @@ class PokemanPics extends Chariot.Command {
     async add(message, args, chariot){
         Chariot.Logger.event("Adding to pkmn: args: '" + args.join(' ') + "'");
         let filename;
-        if (message.channel.nsfw) {filename = 'pkmn.nsfw.json'} else {filename = 'pkmn.json'};
+        filename = 'pkmn.json';
         //Load the file into memory and parse it
         let file = (FS.existsSync('./resources/' + filename)) ? JSON.parse(FS.readFileSync('./resources/' + filename, 'utf8')) : new Array();
 
@@ -37,17 +37,17 @@ class PokemanPics extends Chariot.Command {
         FS.writeFileSync('./resources/' + filename, JSON.stringify(file, null, 2), function (err) {
             if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/' + filename) }
         })
-        message.channel.createMessage(`✅ Saved! I now have **${file.length}** ${message.channel.nsfw ? "lewd " : ""}pokeymans.\nHere's what I just added: \`${newresponse}\``);
+        message.channel.createMessage(`✅ Saved! I now have **${file.length}** pokeymans.\nHere's what I just added: \`${newresponse}\``);
     }
 
     async remove(message, args, chariot){
         Chariot.Logger.event("Removing from pkmn: args: '" + args.join(' ') + "'");
         let filename;
-        if (message.channel.nsfw) {filename = 'pkmn.nsfw.json'} else {filename = 'pkmn.json'};
+        filename = 'pkmn.json';
 
         try {
             var file = JSON.parse(FS.readFileSync('./resources/' + filename, 'utf8'));
-        } catch (e) {if (e.code === "ENOENT" || file.length === 0) {message.channel.createMessage(`💥 I don't have anything yet!${message.channel.nsfw ? "\nKeep in mind that the image pool is different for NSFW channels." : ""}`); return null;}};
+        } catch (e) {if (e.code === "ENOENT" || file.length === 0) {message.channel.createMessage(`💥 I don't have anything yet!`); return null;}};
         var searchtext = args.join(' ');
         const searchindex = (element) => element.includes(searchtext);
         if (file.findIndex(searchindex) !== -1) {
@@ -69,7 +69,7 @@ class PokemanPics extends Chariot.Command {
                 FS.writeFileSync('./resources/' + filename, JSON.stringify(file, null, 2), function (err) {
                     if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/' + filename) }
                 })
-                message.channel.createMessage(`✅ Deleted. I now have **${file.length}** ${message.channel.nsfw ? "lewd " : ""}pokeymans.\nWe removed:\`${deletedtext}\``);
+                message.channel.createMessage(`✅ Deleted. I now have **${file.length}** pokeymans.\nWe removed:\`${deletedtext}\``);
                 Chariot.Logger.event(`Removing from pkmn: removed`);
                 }} else {
                 message.channel.createMessage("💥 Nothing matches that.");
@@ -81,16 +81,16 @@ class PokemanPics extends Chariot.Command {
     async execute(message, args, chariot) {
 
         let filename;
-        if (message.channel.nsfw) {filename = 'pkmn.nsfw.json'} else {filename = 'pkmn.json'};
+        filename = 'pkmn.json';
 
         try {
             var file = JSON.parse(FS.readFileSync('./resources/' + filename, 'utf8'));
-        } catch (e) {if (e.code === "ENOENT"|| file.length === 0) {message.channel.createMessage(`💥 I don't have anything yet!${message.channel.nsfw ? "\nKeep in mind that the image pool is different for NSFW channels." : ""}`); return null;}};
+        } catch (e) {if (e.code === "ENOENT"|| file.length === 0) {message.channel.createMessage(`💥 I don't have anything yet!`); return null;}};
 
         if (args === undefined || args.length == 0) {}
         else {
             file = file.filter(link => link.toLowerCase().includes(args.join(" ")));
-            if (file.length == 0) {message.channel.createMessage(`💥 Nothing matches that. *Is the search term in lowercase?*${message.channel.nsfw ? "\nKeep in mind that the image pool is different for NSFW channels." : ""}`); return null;}
+            if (file.length == 0) {message.channel.createMessage(`💥 Nothing matches that. *Is the search term in lowercase?*`); return null;}
         }
         var response = file[Math.floor(Math.random()*file.length)]; //Choose a response at random
         message.channel.createMessage(response); //Print it

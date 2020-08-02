@@ -21,7 +21,7 @@ class AnimalsCrossing extends Chariot.Command {
         Chariot.Logger.event("Adding to animalcrossing: args: '" + args.join(' ') + "'");
 
         let filename;
-        if (message.channel.nsfw) {filename = 'animalcrossing.nsfw.json'} else {filename = 'animalcrossing.json'};
+        filename = 'animalcrossing.json';
         var file = (FS.existsSync('./resources/' + filename)) ? JSON.parse(FS.readFileSync('./resources/' + filename, 'utf8')) : new Array(); //Load the file into memory and parse it
 
         var newresponse = args.join(' ');
@@ -36,18 +36,18 @@ class AnimalsCrossing extends Chariot.Command {
         FS.writeFileSync('./resources/' + filename, JSON.stringify(file, null, 2), function (err) {
             if (err) { Chariot.Logger.error('Write failed','Could not write to resources/' + filename) }
         })
-        message.channel.createMessage(`✅ Saved! Bucketopia now has **${file.length}** ${message.channel.nsfw ? "sinful yiffers" : "furries"}.\nHere's what I just added: \`${newresponse}\``);
+        message.channel.createMessage(`✅ Saved! Bucketopia now has **${file.length}** furries.\nHere's what I just added: \`${newresponse}\``);
     }
 
     async remove(message, args, chariot){
         Chariot.Logger.event("Removing from animalcrossing: args: '" + args.join(' ') + "'");
 
         let filename;
-        if (message.channel.nsfw) {filename = 'animalcrossing.nsfw.json'} else {filename = 'animalcrossing.json'};
+        filename = 'animalcrossing.json';
 
         try {
             var file = JSON.parse(FS.readFileSync('./resources/' + filename, 'utf8'));
-        } catch (e) {if (e.code === "ENOENT") {message.channel.createMessage(`💥 I don't have anything yet!${message.channel.nsfw ? "\nKeep in mind that the image pool is different for NSFW channels." : ""}`); return null;}};
+        } catch (e) {if (e.code === "ENOENT") {message.channel.createMessage(`💥 I don't have anything yet!`); return null;}};
         var searchtext = args.join(' ');
         const searchindex = (element) => element.includes(searchtext);
         if (file.findIndex(searchindex) !== -1) {
@@ -69,7 +69,7 @@ class AnimalsCrossing extends Chariot.Command {
                 FS.writeFileSync('./resources/' + filename, JSON.stringify(file, null, 2), function (err) {
                     if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/animalcrossing.json') }
                 })
-                message.channel.createMessage(`✅ Deleted. I now have **${file.length}** ${message.channel.nsfw ? "sinful yiffers" : "furries"}.\nWe removed: \`${deletedtext}\``);
+                message.channel.createMessage(`✅ Deleted. I now have **${file.length}** furries.\nWe removed: \`${deletedtext}\``);
                 Chariot.Logger.event(`Removing from animalcrossing: removed`);
                 }} else {
                 message.channel.createMessage("💥 Nothing matches that.");
@@ -80,11 +80,11 @@ class AnimalsCrossing extends Chariot.Command {
 
     async execute(message, args, chariot) {
         let filename;
-        if (message.channel.nsfw) {filename = 'animalcrossing.nsfw.json'} else {filename = 'animalcrossing.json'};
+        filename = 'animalcrossing.json';
 
         try {
             var file = JSON.parse(FS.readFileSync('./resources/' + filename, 'utf8'));
-        } catch (e) {if (e.code === "ENOENT") {message.channel.createMessage(`💥 I don't have anything yet!${message.channel.nsfw ? "\nKeep in mind that the image pool is different for NSFW channels." : ""}`); return null;}};
+        } catch (e) {if (e.code === "ENOENT") {message.channel.createMessage(`💥 I don't have anything yet!`); return null;}};
 
         if (args === undefined || args.length == 0) {}
         else {
