@@ -26,8 +26,6 @@ class IdleSystem extends Chariot.Event {
                     let user = (message.member.nick) ? message.member.nick : message.author.username;
                     let server = message.channel.guild.name;
 
-
-                    
                     let deathMessage = deaths[Math.floor(Math.random()*deaths.length)];
                     // Substitute variable names if necessary
                     deathMessage = deathMessage.replace(/`user`/g, user);
@@ -38,7 +36,10 @@ class IdleSystem extends Chariot.Event {
                     message.channel.createMessage(`🕑💀 ${deathMessage}\n\`//help deaths\``);
                     break;
                 case 2: // facts
-                    let facts = ( FS.existsSync('./resources/facts.json') ) ? JSON.parse(FS.readFileSync('./resources/facts.json', 'utf8')) : null;
+                    var global = JSON.parse(FS.readFileSync('./resources/facts/global.json', 'utf8')); //Load the file into memory and parse it
+                    var local = FS.existsSync(`./resources/facts/${message.channel.guild.id}.json`) ? JSON.parse(FS.readFileSync(`./resources/facts/${message.channel.guild.id}.json`, 'utf8')) : new Array();
+                    let facts = global.concat(local);
+
                     let factsMessage = facts[Math.floor(Math.random()*facts.length)];
                     message.channel.createMessage(`🕑🎙 ${factsMessage}\n*Got anymore totally true for-real facts?* \`//help facts\``);
                     break;
