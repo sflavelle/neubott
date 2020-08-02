@@ -24,7 +24,7 @@ class Splatoon extends Chariot.Command {
         let options = {
             baseURL: 'https://splatoon2.ink/',
             headers: {
-                'User-Agent': 'Neubott/0.1 (Neu#1909, @Splatsune)'
+                'User-Agent': 'Neubott/0.1 (Splatsune#1909, @Splatsune)'
             }
         }
 
