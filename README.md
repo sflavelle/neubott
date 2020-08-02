@@ -8,7 +8,9 @@ While I've written Javascript code occasionally before, up til this point it was
 
 Drop any .js files you'd like into your Chariot.js-based bot's directory, and it should load automatically.
 
-`facts`, `gimmesquids`, and `whatdidimiss` all rely on their own JSON array. You may feel free to use the ones provided (for now they MUST be in a `resources` folder in the directory that contains your index.js), or you may create your own.
+A lot of the commands rely on their own JSON array. They should be created on their own - but if they don't, you may feel free to use the ones provided (for now they MUST be in a `resources` folder in the directory that contains your index.js).
+
+The `facts` and `deathmsgs` files go in a subdirectory - see the resources folder for an example. Name them `global.json` to apply to all servers, or name them after your guild ID to have them only apply to a single server. At run time the relevant commands/events will mix the server-specific and global files to return a random response.
 
 ## Contributions
 
@@ -22,6 +24,5 @@ Please keep a polite tone - if you think I could have done something better, it'
 - Automatically initialise array if one does not exist where needed
 - Implement error handling, especially in regards to file i/o errors
 - Implement from the old Neubott:
-  - 'idle channel system' (post something when certain channels are inactive for an amount of time)
-  - quoting system
   - factoids about users
+  - simple web system for getting quotes/facts/etc, getting files for authed users
