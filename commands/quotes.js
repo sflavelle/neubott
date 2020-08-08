@@ -49,7 +49,7 @@ class Quotes extends Chariot.Command {
             try {
                 let msglink = new URL(args[0]);
                 let msglinkText = msglink.toString();
-                if (msglinkText.startsWith('https://discordapp.com/channels/') || msglinkText.startsWith('https://canary.discordapp.com/channels/') || msglinkText.startsWith('https://ptb.discordapp.com/channels/')) {
+                if (msglinkText.startsWith('https://discordapp.com/channels/') || msglinkText.startsWith('https://canary.discordapp.com/channels/') || msglinkText.startsWith('https://ptb.discordapp.com/channels/') || msglinkText.startsWith('https://discord.com/channels/') || msglinkText.startsWith('https://canary.discord.com/channels/') || msglinkText.startsWith('https://ptb.discord.com/channels/')) {
                     let url = args[0];
                     let array = url.split('/');
                     array = array.slice(4); // get the ID parts
@@ -132,6 +132,22 @@ class Quotes extends Chariot.Command {
                 let msglink = new URL(args[0]);
                 let msglinkText = msglink.toString();
                 if (msglinkText.startsWith('https://discordapp.com/channels/') || msglinkText.startsWith('https://canary.discordapp.com/channels/') || msglinkText.startsWith('https://ptb.discordapp.com/channels/')) {
+                    let url = args[0];
+                    let array = url.split('/');
+                    array = array.slice(4); // get the ID parts
+
+                    let msg = chariot.getMessage(array[1].toString(),array[2].toString()) // Get the message object
+                    msg.then((msg) => {
+                        Chariot.Logger.event("[QUOTE] Pulled message object");
+                        // console.log(msg);
+                        quote = msg.content;
+                        author = msg.member ? msg.member.nick : msg.author.username;
+                        timestamp = new Date(msg.timestamp);
+                        authorid = msg.member ? msg.member.id : msg.author.id;
+                    });
+                    await msg;
+                }
+                else if (msglinkText.startsWith('https://discord.com/channels/') || msglinkText.startsWith('https://canary.discord.com/channels/') || msglinkText.startsWith('https://ptb.discord.com/channels/')) {
                     let url = args[0];
                     let array = url.split('/');
                     array = array.slice(4); // get the ID parts
