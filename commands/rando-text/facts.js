@@ -74,7 +74,7 @@ class BotFacts extends Chariot.Command {
         FS.writeFileSync('./resources/facts/global.json', JSON.stringify(file, null, 2), function (err) {
             if (err) { Chariot.Logger.error('Write failed','Could not write to /resources/facts/global.json') }
         })
-        message.channel.createMessage("✅ Saved! I now have **" + file.length + "** global death messages.\nHere's what I just added:\n`" + newresponse.replace('`', '\`') + "`");
+        message.channel.createMessage("✅ Saved! I now have **" + file.length + "** facts for everyone, everywhere!\nHere's what I just added:\n`" + newresponse.replace('`', '\`') + "`");
     }
 
     async gremove(message, args, chariot){
