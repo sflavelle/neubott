@@ -12,6 +12,11 @@ const sql = new Sequelize('database', 'user', 'password', {
 });
 
 const quotes = sql.define('quotes', {
+    id: {
+        type: Sequelize.INTEGER,
+        unique: true,
+        autoIncrement: true
+    },
     content: Sequelize.TEXT,
     authorID: Sequelize.STRING,
     authorName: Sequelize.STRING,
@@ -46,8 +51,7 @@ module.exports = {
     },
     format(quote){
         // This is the format that the quotes in other commands will use
-        const { content, authorID, authorName, timestamp } = quote;
-        // const quoteID = client.quotes.findOne({ where: {content: content }}).rowID;
+        const { id, content, authorID, authorName, timestamp, } = quote;
 
         // Get timestamp format
         const timestampFormat = new Intl.DateTimeFormat('en-us', {
@@ -61,7 +65,7 @@ module.exports = {
         // authorID = quote author's ID
         // authorName = quote author's name (in case user no longer exists)
         // timestamp = timestamp of the created message
-        return `"${content}"\n—*${authorID ? "<@" + authorID + ">" : authorName} / ${timestamp ? timestampFormat.format(timestamp) : "Octember 32, 2020"} [#${rowid+1}]*`
+        return `"${content}"\n—*${authorID ? "<@" + authorID + ">" : authorName} / ${timestamp ? timestampFormat.format(timestamp) : "Octember 32, 2020"} [#${id}]*`
     },
     async parse(message, args) {
         // Determine the format of the quote, and extract/return the relevant details
