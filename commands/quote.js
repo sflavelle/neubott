@@ -49,9 +49,9 @@ module.exports = {
         // client.getQuote = sql.prepare("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1");
         // client.addQuote = sql.prepare("INSERT OR REPLACE INTO quotes (id, content, author_id, author_name, added_by, guild, timestamp) VALUES (@id, @content, @author_id, @author_name, @added_by, @guild, @timestamp);")
     },
-    format(quote){
+    format(quote, qid, qlength){
         // This is the format that the quotes in other commands will use
-        const { id, content, authorID, authorName, timestamp, } = quote;
+        const { content, authorID, authorName, timestamp, } = quote;
 
         // Get timestamp format
         const timestampFormat = new Intl.DateTimeFormat('en-us', {
@@ -65,7 +65,14 @@ module.exports = {
         // authorID = quote author's ID
         // authorName = quote author's name (in case user no longer exists)
         // timestamp = timestamp of the created message
-        return `"${content}"\n—*${authorID ? "<@" + authorID + ">" : authorName} / ${timestamp ? timestampFormat.format(timestamp) : "Octember 32, 2020"} [#${id}]*`
+        let quotemsg = `"${content}"\n—*${authorID ? "<@" + authorID + ">" : authorName} / ${timestamp ? timestampFormat.format(timestamp) : "Octember 32, 2020"}*`
+        if (qid) {
+            quotemsg += ` [#${qid}]`;
+            if (qlength) {
+                quotemsg = quotemsg.replace(/]$/g,`/${qlength}]`);
+            }
+        }
+        return quotemsg;
     },
     async parse(message, args) {
         // Determine the format of the quote, and extract/return the relevant details
@@ -108,8 +115,7 @@ module.exports = {
             // Matches the quote string format
             
             let [, content, authorName] = message.content.match(QuoteRegex);
-            let authorID, guild;
-            let addedBy;
+            let authorID;
 
             if (authorName.match(/^<!?@(\d+)>/)) {
                 //if supplied name is a mention, parse it
@@ -129,25 +135,27 @@ module.exports = {
         }
         else { return "NOQUOTE" }
     },
-    execute(message, args) {
+    async execute(message, args) {
         if (args.length === 0) {
-            // Not ready yet, so here's a demo
-            let quote = {
-                timestamp: null,
-                authorID: "49345026618036224",
-                authorName: "Ash",
-                content: "Any ending wherein Luigi drowns himself is a good ending in my book"
-                }
-            return message.channel.send(`${error} This isn't ready yet, but enjoy a demonstration of what *should* happen:\n${this.format(quote)}`, { allowedMentions: 'none' });
+            // Get all quotes from this guild
+            const quotesAll = await message.client.quotes.findAll({ where: { guild: message.guild.id } }); 
+            // Pick a random one
+            const rng = Math.floor(Math.random()*quotesAll.length);
+            const quote = quotesAll[rng];
+            // console.log("Quote object: " + JSON.stringify(quote, null, 4));
+
+            // Post the quote and stop execution
+            // An allowedMentions object is used here to disallow the bot from pinging anyone
+            return message.channel.send(`${this.format(quote, rng+1, quotesAll.length)}`, { allowedMentions: { users: []}});
         }
-        // Check if we need to ADD or SET something
+        // Check if we need to ADD or SET something first
         switch (args[0]){
             case 'add': 
                 args.shift();
                 this.add(message, args, false);
-                break;
+                return;
             case 'set':
-                message.channel.send(`${error} There's nothing to set because this still isn't ready.`);
+                return message.channel.send(`${error} There's nothing to set because this still isn't ready.`);
                 break;
             default:
         }
@@ -182,10 +190,10 @@ module.exports = {
             const embedQuote = new Discord.MessageEmbed()
             .setColor('#00ff00')
             .setTitle('Quote added successfully')
-            .setDescription(this.format(addedQuote));
+            .setDescription(this.format(addedQuote, addedQuote.id));
             
             message.channel.send(embedQuote);
-            return message.react(success);
+            return message.react(':thumbsup:');
         } catch (e) {
             switch (e.name) {
                 case 'SequelizeUniqueConstraintError':
