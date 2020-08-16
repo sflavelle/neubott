@@ -1,6 +1,7 @@
 const SQLite = require('sequelize');
 const { Sequelize } = require('sequelize');
 const moment = require('moment');
+const Discord = require('discord.js');
 
 const sql = new Sequelize('database', 'user', 'password', {
     host: 'localhost',
@@ -11,17 +12,16 @@ const sql = new Sequelize('database', 'user', 'password', {
 });
 
 const quotes = sql.define('quotes', {
-    id: {
-        type: Sequelize.STRING,
-        unique: true,
-        primaryKey: true
-    },
     content: Sequelize.TEXT,
     authorID: Sequelize.STRING,
     authorName: Sequelize.STRING,
     addedBy: Sequelize.STRING,
     guild: Sequelize.STRING,
-    msgID: Sequelize.STRING,
+    msgID: {
+        type: Sequelize.STRING,
+        unique: true,
+        primaryKey: true
+    },
     timestamp: {
         type: Sequelize.INTEGER,
         defaultValue: 0,
@@ -47,6 +47,7 @@ module.exports = {
     format(quote){
         // This is the format that the quotes in other commands will use
         const { content, authorID, authorName, timestamp } = quote;
+        // const quoteID = client.quotes.findOne({ where: {content: content }}).rowID;
 
         // Get timestamp format
         const timestampFormat = new Intl.DateTimeFormat('en-us', {
@@ -60,7 +61,7 @@ module.exports = {
         // authorID = quote author's ID
         // authorName = quote author's name (in case user no longer exists)
         // timestamp = timestamp of the created message
-        return `"${content}"\n—*${authorID ? "<@" + authorID + ">" : authorName} / ${timestamp ? timestampFormat.format(timestamp) : "Octember 32, 2020"} [#xxx]*`
+        return `"${content}"\n—*${authorID ? "<@" + authorID + ">" : authorName} / ${timestamp ? timestampFormat.format(timestamp) : "Octember 32, 2020"} [#${rowid+1}]*`
     },
     async parse(message, args) {
         // Determine the format of the quote, and extract/return the relevant details
@@ -79,7 +80,7 @@ module.exports = {
                 if (quotemsg.id) {
                     // We got the linked message, now return the quote object
                     console.log(`[${this.name}] fetched message ${quotemsg.id} from ${quotemsg.author.username}!`);
-                    console.log(quotemsg);
+                    // console.log(quotemsg);
                     return {
                         content: quotemsg.content,
                         authorID: quotemsg.author.id,
@@ -139,7 +140,7 @@ module.exports = {
         switch (args[0]){
             case 'add': 
                 args.shift();
-                this.add(message, args, true);
+                this.add(message, args, false);
                 break;
             case 'set':
                 message.channel.send(`${error} There's nothing to set because this still isn't ready.`);
@@ -150,7 +151,7 @@ module.exports = {
     },
     async add(message, args, testmode) {
         const quote = await this.parse(message, args);
-        console.log("Quote object: " + JSON.stringify(quote, null, 4));
+        // console.log("Quote object: " + JSON.stringify(quote, null, 4));
         switch (quote) {
             case "COULDNTGET":
                 return message.channel.send(`${error} I don't have access to that message. It may be in a server or channel I don't see.`);
@@ -170,6 +171,25 @@ module.exports = {
             message.channel.send(JSON.stringify(quote, null, 4), { code: 'json' });
             return
         };
+
+        try {
+            const addedQuote = await message.client.quotes.create(quote);
+            
+            const embedQuote = new Discord.MessageEmbed()
+            .setColor('#00ff00')
+            .setTitle('Quote added successfully')
+            .setDescription(this.format(addedQuote));
+            
+            message.channel.send(embedQuote);
+            return message.react(success);
+        } catch (e) {
+            switch (e.name) {
+                case 'SequelizeUniqueConstraintError':
+                    return message.channel.send(`${error} For some reason, I tried saving to a quote ID that already exists. :thinking:`);
+                default:
+                    return message.channel.send(e.stack, { code: 'js' });
+            }
+        }
 
         // return message.channel.send(`${error} This also isn't ready yet.`);
 
