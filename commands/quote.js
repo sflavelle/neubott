@@ -15,6 +15,7 @@ const quotes = sql.define('quotes', {
     id: {
         type: Sequelize.INTEGER,
         unique: true,
+        primaryKey: true,
         autoIncrement: true
     },
     content: Sequelize.TEXT,
@@ -24,14 +25,11 @@ const quotes = sql.define('quotes', {
     guild: Sequelize.STRING,
     msgID: {
         type: Sequelize.STRING,
-        unique: true,
-        primaryKey: true
+        allowNull: true
     },
     timestamp: {
         type: Sequelize.INTEGER,
-        defaultValue: 0,
-        allowNull: false
-    }
+        defaultValue: 0    }
 });
 
 const { success, error } = require('../config.json').emoji;
@@ -49,7 +47,7 @@ module.exports = {
         // client.getQuote = sql.prepare("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1");
         // client.addQuote = sql.prepare("INSERT OR REPLACE INTO quotes (id, content, author_id, author_name, added_by, guild, timestamp) VALUES (@id, @content, @author_id, @author_name, @added_by, @guild, @timestamp);")
     },
-    format(quote, qid, qlength){
+    format(message, quote, qid, qlength){
         // This is the format that the quotes in other commands will use
         const { content, authorID, authorName, timestamp, } = quote;
 
@@ -59,13 +57,20 @@ module.exports = {
             day: 'numeric',
             year: 'numeric'
         });
+
+        // Check if authorID is in the server
+        let authorExists;
+        message.guild.members.fetch(authorID)
+            .then((m) => {
+                if (m) {authorExists = true;} else {authorExists = false;}
+            })
         // QUOTE PARAMETERS
         // 
         // CONTENT = quote msg
         // authorID = quote author's ID
         // authorName = quote author's name (in case user no longer exists)
         // timestamp = timestamp of the created message
-        let quotemsg = `"${content}"\n—*${authorID ? "<@" + authorID + ">" : authorName} / ${timestamp ? timestampFormat.format(timestamp) : "Octember 32, 2020"}*`
+        let quotemsg = `"${content}"\n—*${authorExists ? `<@${authorID}>` : authorName} / ${timestamp ? timestampFormat.format(timestamp) : "Octember 32, 2020"}*`
         if (qid) {
             quotemsg += ` [#${qid}]`;
             if (qlength) {
@@ -139,6 +144,7 @@ module.exports = {
         if (args.length === 0) {
             // Get all quotes from this guild
             const quotesAll = await message.client.quotes.findAll({ where: { guild: message.guild.id } }); 
+            if (quotesAll.length === 0 ) { return message.channel.send(`${error} There aren't any quotes on this server!`) };
             // Pick a random one
             const rng = Math.floor(Math.random()*quotesAll.length);
             const quote = quotesAll[rng];
@@ -146,7 +152,7 @@ module.exports = {
 
             // Post the quote and stop execution
             // An allowedMentions object is used here to disallow the bot from pinging anyone
-            return message.channel.send(`${this.format(quote, rng+1, quotesAll.length)}`, { allowedMentions: { users: []}});
+            return message.channel.send(`${this.format(message, quote, rng+1, quotesAll.length)}`, { allowedMentions: { users: []}});
         }
         // Check if we need to ADD or SET something first
         switch (args[0]){
@@ -157,7 +163,34 @@ module.exports = {
             case 'set':
                 return message.channel.send(`${error} There's nothing to set because this still isn't ready.`);
                 break;
+            case 'count':
+                let count;
+                if (args[1] && args[1] === "!all") {
+                    count = await message.client.quotes.count();
+                } else { count = await message.client.quotes.count({ where: { guild: message.guild.id }}); };
+                return message.channel.send(`${success} I have ${count} quotes ${(args[1] && args[1] === "!all") ? "in all servers I'm in" : "in this server"}.`)
             default:
+        }
+
+        // If we get this far, we need to check what kind of quote they want to show
+        if (args[0] === "!all") {
+            // Get ALL quotes, from every guild
+            const quotesAll = await message.client.quotes.findAll(); //no parameters
+            if (quotesAll.length === 0 ) { return message.channel.send(`${error} There aren't any quotes *anywhere*!`) };
+            const rng = Math.floor(Math.random()*quotesAll.length);
+            const quote = quotesAll[rng];
+            return message.channel.send(`${this.format(message, quote, rng+1, quotesAll.length)}`, { allowedMentions: { users: []}});
+        }
+        if (args[0] === "me") {
+            // Get quotes only by the user asking
+            let quotesMe;
+            if (args[1] && args[1] === "!all") { quotesMe = await message.client.quotes.findAll( { where: { authorID: message.author.id }}); } //get their quotes from all servers
+            else {quotesMe = await message.client.quotes.findAll( { where: { authorID: message.author.id, guild: message.guild.id }});} //no parameters
+            if (quotesMe.length === 0 ) { return message.channel.send(`${error} You don't have any quotes saved.`) };
+            const rng = Math.floor(Math.random()*quotesMe.length);
+            const quote = quotesMe[rng];
+            return message.channel.send(`${this.format(message, quote, rng+1, quotesMe.length)}`, { allowedMentions: { users: []}});
+
         }
 
     },
