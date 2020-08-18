@@ -5,7 +5,20 @@ const humanizeDuration = require("humanize-duration");
 
 module.exports = {
     name: 'splatoon',
-    shortDesc: `Here are the battle stages today!`,
+    help: {
+        visible: true,
+        short: `Here are the battle stages today!`,
+        usage: [ 'splatoon' ],
+        long: `
+                This command will call the site https://splatoon2.ink/ which uses Nintendo Switch Online APIs to retrieve information about the current stages available in Turf War, Ranked Battle and League Battle.
+                It will also see if Grizzco is open for Salmon Run shifts, and if so displays the stage played on, weapons available, and what the reward is.
+
+                If Grizzco is closed, this command will let you know when it is next available.
+
+                Currently this command won't tell you if a Splatfest is currently active.
+                `
+
+    },
     async execute(message, args) {
 
         let TSbegin = Date.now();

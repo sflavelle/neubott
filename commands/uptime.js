@@ -1,20 +1,13 @@
+const humanizeDuration = require("humanize-duration");
+
 module.exports = {
     name: 'uptime',
-    shortDesc: 'How long have I been running?',
+    help: {
+      visible: true,
+      short: 'How long have I been running?',
+      usage: [ 'uptime' ],
+    },
     execute(message, args) {
-        
-        function formatTime(seconds){
-            function pad(s){
-                    return (s < 10 ? '0' : '') + s;
-                  }
-            var hours = Math.floor(seconds / (60*60));
-            var minutes = Math.floor(seconds % (60*60) / 60);
-            var seconds = Math.floor(seconds % 60);
-      
-            return pad(hours) + ':' + pad(minutes) + ':' + pad(seconds);
-      }
-
-      message.channel.send(`Currently up for ${formatTime(process.uptime())}`);
-
+      message.channel.send(`This process has been running for ${humanizeDuration(process.uptime()*1000, { round: true, maxDecimalPoints:1 })}`);
     }
 }

@@ -3,6 +3,7 @@ const { Sequelize } = require('sequelize');
 const moment = require('moment');
 const Discord = require('discord.js');
 
+
 const sql = new Sequelize('database', 'user', 'password', {
     host: 'localhost',
     dialect: 'sqlite',
@@ -30,15 +31,39 @@ const quotes = sql.define('quotes', {
     timestamp: {
         type: Sequelize.INTEGER,
         defaultValue: 0    }
-});
-
-const { success, error } = require('../config.json').emoji;
-
-module.exports = {
-    name: 'quote',
-    aliases: ['quotes', 'fuck'],
-    shortDesc: `Let's get that on the record`,
-    guildOnly: true,
+    });
+    
+    const { success, error } = require('../config.json').emoji;
+    
+    module.exports = {
+        name: 'quote',
+        aliases: ['quotes', 'fuck'],
+        guildOnly: true,
+        help: {
+            visible: true,
+            short: `Let's get that on the record`,
+            long: `
+            You said it. We quoted it.
+            
+            **GETTING QUOTES**
+            
+            \`quote\` on its own retrieves a random quote.
+            \`quote me\` retrieves one of *your* quotes, if you've got one.
+            \`quote 3\` *(not implemented)* will get quote 3 in the database.
+            
+            **ADDING QUOTES**
+            
+            You can add a quote in one of two ways:
+            Sending me a message link: \`quote add https://discordapp.com/channels/...\`
+            Or with text: \`quote add "This is the quote" @someone\`
+            
+            **MODIFIERS**
+            Adding modifiers after certain quote commands can change how quotes are selected.
+            \`!all\` will look at quotes from every server - not just this one.
+            \`!guild <guild id>\` *(not implemented)* will look at quotes from the specified guild.
+        `,
+        usage: [ 'quote', 'quote me', 'quote !all', 'addquote' ]
+    },
     async ready(client) {
             client.quotes = quotes;
             client.quotes.sync();

@@ -2,7 +2,10 @@ const { success, error } = require('../config.json').emoji;
 
 module.exports = {
     name: 'reload',
-    shortDesc: 'Reloads a command',
+    help: {
+        short: 'Reloads a command',
+        usage: [ 'reload <command> ']
+    },
     owner: true,
     execute(message, args) {
         if (!args.length) return message.channel.send(`${error} I kinda need a command name to reload, ${message.author}...`);
