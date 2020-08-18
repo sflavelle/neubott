@@ -57,20 +57,16 @@ module.exports = {
             day: 'numeric',
             year: 'numeric'
         });
+        let authorCheck;
+        try { authorCheck = message.guild.member(authorID); console.log(JSON.stringify(authorCheck, null, 4)); } catch (e) { authorCheck = false; }
 
-        // Check if authorID is in the server
-        let authorExists;
-        message.guild.members.fetch(authorID)
-            .then((m) => {
-                if (m) {authorExists = true;} else {authorExists = false;}
-            })
         // QUOTE PARAMETERS
         // 
         // CONTENT = quote msg
         // authorID = quote author's ID
         // authorName = quote author's name (in case user no longer exists)
         // timestamp = timestamp of the created message
-        let quotemsg = `"${content}"\n—*${authorExists ? `<@${authorID}>` : authorName} / ${timestamp ? timestampFormat.format(timestamp) : "Octember 32, 2020"}*`
+        let quotemsg = `"${content}"\n—*${(authorCheck !== null) ? `<@${authorID}>` : authorName} / ${timestamp ? timestampFormat.format(timestamp) : "Octember 32, 2020"}*`
         if (qid) {
             quotemsg += ` [#${qid}]`;
             if (qlength) {
