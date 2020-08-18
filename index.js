@@ -62,7 +62,7 @@ client.on('message', message => {
 			else {errormsg += "I'll let the bot owner know."}
 		}
 		else {
-			if (message.guild && new Set(['124680630075260928','124680630075260928']).has(message.guild.id)) {
+			if (message.guild && new Set(['206734382990360576','124680630075260928']).has(message.guild.id)) {
 			// Big kids get to see the error stack
 			errormsg += `\n${'```js\n' + error.stack + '\n```'}`
 			} else {errormsg += ` Pinging <@${config.owner}>, go check it out!`}
