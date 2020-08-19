@@ -71,6 +71,7 @@ module.exports = {
             dataSplatfest = reqBattle.data;
             FS.writeFileSync('./.cache/spl2-fest.json', JSON.stringify(dataSplatfest, null, 2));
         };
+        let timeBeforeFest = Math.floor(Math.abs(dataSplatfest.na.festivals[0].times.start - timeRightNow))*1000;
         var timeEndFest = new Date(dataSplatfest.na.festivals[0].times.end);
         var timeLeftFest = Math.floor(Math.abs(timeEndFest - timeRightNow))*1000;
 
@@ -95,6 +96,7 @@ module.exports = {
             .setURL('https://splatoon2.ink/')
             .setTimestamp()
             .setFooter('Data provided by Splatoon2.ink, processed in ' + (TSend - TSbegin) + 'ms','https://splatoon2.ink/favicon-32x32.png')
+        if (Math.floor(timeBeforeFest/1000/60/60/24) < 7) {TurfEmbed.addField('Splatfest Incoming!',`${dataSplatfest.na.festivals[0].names.alpha_short} vs. ${dataSplatfest.na.festivals[0].names.bravo_short} will begin in **${humanizeDuration(timeBeforeFest, { largest: 2 })}**`)}
 
         message.channel.send((timeRightNow > dataSplatfest.na.festivals[0].times.start && timeRightNow < dataSplatfest.na.festivals[0].times.end) ? FestEmbed : TurfEmbed);
         // message.channel.send(FestEmbed); // For testing
