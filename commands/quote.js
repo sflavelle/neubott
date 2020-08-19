@@ -39,6 +39,7 @@ const quotes = sql.define('quotes', {
         name: 'quote',
         aliases: ['quotes', 'fuck'],
         guildOnly: true,
+        // readOnly: true,
         help: {
             visible: true,
             short: `Let's get that on the record`,
@@ -46,13 +47,12 @@ const quotes = sql.define('quotes', {
             You said it. We quoted it.
             
             **GETTING QUOTES**
-            
             \`quote\` on its own retrieves a random quote.
             \`quote me\` retrieves one of *your* quotes, if you've got one.
             \`quote 3\` *(not implemented)* will get quote 3 in the database.
+            \`quote count\` gets you the number of quotes, if you just want a number.
             
             **ADDING QUOTES**
-            
             You can add a quote in one of two ways:
             Sending me a message link: \`quote add https://discordapp.com/channels/...\`
             Or with text: \`quote add "This is the quote" @someone\`
@@ -60,8 +60,8 @@ const quotes = sql.define('quotes', {
             **MODIFIERS**
             Adding modifiers after certain quote commands can change how quotes are selected.
             \`!all\` will look at quotes from every server - not just this one.
-            \`!guild <guild id>\` *(not implemented)* will look at quotes from the specified guild.
-        `,
+            \`!guild <guild id>\` will look at quotes from the specified guild.
+            `,
         usage: [ 'quote', 'quote me', 'quote !all', 'addquote' ]
     },
     async ready(client) {
@@ -162,60 +162,70 @@ const quotes = sql.define('quotes', {
         else { return "NOQUOTE" }
     },
     async execute(message, args) {
-        if (args.length === 0) {
-            // Get all quotes from this guild
-            const quotesAll = await message.client.quotes.findAll({ where: { guild: message.guild.id } }); 
-            if (quotesAll.length === 0 ) { return message.channel.send(`${error} There aren't any quotes on this server!`) };
-            // Pick a random one
-            const rng = Math.floor(Math.random()*quotesAll.length);
-            const quote = quotesAll[rng];
-            // console.log("Quote object: " + JSON.stringify(quote, null, 4));
+        let qOptions = {
+            where: { 
+                guild: message.guild.id 
+            } 
+        };
+        
 
-            // Post the quote and stop execution
-            // An allowedMentions object is used here to disallow the bot from pinging anyone
-            return message.channel.send(`${this.format(message, quote, rng+1, quotesAll.length)}`, { allowedMentions: { users: []}});
-        }
-        // Check if we need to ADD or SET something first
-        switch (args[0]){
-            case 'add': 
-                args.shift();
-                this.add(message, args, false);
-                return;
-            case 'set':
-                return message.channel.send(`${error} There's nothing to set because this still isn't ready.`);
-                break;
-            case 'count':
-                let count;
-                if (args[1] && args[1] === "!all") {
-                    count = await message.client.quotes.count();
-                } else { count = await message.client.quotes.count({ where: { guild: message.guild.id }}); };
-                return message.channel.send(`${success} I have ${count} quotes ${(args[1] && args[1] === "!all") ? "in all servers I'm in" : "in this server"}.`)
-            default:
-        }
-
-        // If we get this far, we need to check what kind of quote they want to show
-        if (args[0] === "!all") {
+        // MODIFIERS 
+        if (args && args.includes("!all")) {
             // Get ALL quotes, from every guild
-            const quotesAll = await message.client.quotes.findAll(); //no parameters
-            if (quotesAll.length === 0 ) { return message.channel.send(`${error} There aren't any quotes *anywhere*!`) };
-            const rng = Math.floor(Math.random()*quotesAll.length);
-            const quote = quotesAll[rng];
-            return message.channel.send(`${this.format(message, quote, rng+1, quotesAll.length)}`, { allowedMentions: { users: []}});
+            delete qOptions.where.guild;
         }
-        if (args[0] === "me") {
-            // Get quotes only by the user asking
-            let quotesMe;
-            if (args[1] && args[1] === "!all") { quotesMe = await message.client.quotes.findAll( { where: { authorID: message.author.id }}); } //get their quotes from all servers
-            else {quotesMe = await message.client.quotes.findAll( { where: { authorID: message.author.id, guild: message.guild.id }});} //no parameters
-            if (quotesMe.length === 0 ) { return message.channel.send(`${error} You don't have any quotes saved.`) };
-            const rng = Math.floor(Math.random()*quotesMe.length);
-            const quote = quotesMe[rng];
-            return message.channel.send(`${this.format(message, quote, rng+1, quotesMe.length)}`, { allowedMentions: { users: []}});
+        if (args && args.includes("!guild")) {
+            if (args.includes("!all")) { return message.channel.send(`${error} You can't use \`!all\` and \`!guild\` at the same time.`)};
+            // search a different guild
+            qOptions.where.guild = args[args.indexOf("!guild")+1];
+        }
 
+        let qRNG;
+        let qALL; 
+
+        if (args.length > 0) {
+            // Check if we need to ADD or SET something first
+            switch (args[0]){
+                case 'add': 
+                    args.shift();
+                    this.add(message, args, false);
+                    return;
+                case 'set':
+                    return message.channel.send(`${error} There's nothing to set because this still isn't ready.`);
+                    break;
+                case 'count':
+                    let count;
+                    count = await message.client.quotes.count(qOptions);
+                    return message.channel.send(`${success} I have ${count} quotes ${(args.includes("!all")) ? "in all servers I'm in" : "in this server"}.`)
+                // quote searches
+                case 'me':
+                    qOptions.where.authorID = message.author.id;
+                default:
+            }
         }
+
+        // Now process the command
+        const quotes = await message.client.quotes.findAll(qOptions); 
+        if (quotes.length === 0 ) { return message.channel.send(`${error} There aren't any quotes for this search!`) };
+        // Pick a random one
+        // (OR get the ID the user has picked)
+        qRNG = args.find(num => {typeof num === 'integer' && num !== qOptions.where.guild})
+            ? args.find(num => {typeof num === 'integer' && num !== qOptions.where.guild})
+            : Math.floor(Math.random()*quotes.length);
+
+        const quote = quotes[qRNG];
+        qALL = quotes.length;
+        // console.log("Quote object: " + JSON.stringify(quote, null, 4));
+
+        // Post the quote and stop execution
+        // An allowedMentions object is used here to disallow the bot from pinging anyone
+        return message.channel.send(`${this.format(message, quote, qRNG+1, qALL)}`, { allowedMentions: { users: []}});
+        
 
     },
     async add(message, args, testmode) {
+        if (this.readOnly) {return message.channel.send(`${error} Adding quotes is disabled at the moment - the bot owner is probably fixing something.`)};
+
         const quote = await this.parse(message, args);
         // console.log("Quote object: " + JSON.stringify(quote, null, 4));
         switch (quote) {
