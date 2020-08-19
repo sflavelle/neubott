@@ -4,6 +4,7 @@ const { success, error } = require('../config.json').emoji;
 
 module.exports = {
     name: 'help',
+    aliases: ['commands'],
     help: {
         visible: false,
         short: "Help I'm Trapped Inside a Recursion Factory",
