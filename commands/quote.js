@@ -49,7 +49,6 @@ const quotes = sql.define('quotes', {
             **GETTING QUOTES**
             \`quote\` on its own retrieves a random quote.
             \`quote me\` retrieves one of *your* quotes, if you've got one.
-            \`quote 3\` *(not implemented)* will get quote 3 in the database.
             \`quote count\` gets you the number of quotes, if you just want a number.
             
             **ADDING QUOTES**
@@ -60,6 +59,7 @@ const quotes = sql.define('quotes', {
             **MODIFIERS**
             Adding modifiers after certain quote commands can change how quotes are selected.
             \`!all\` will look at quotes from every server - not just this one.
+            \`a number\` will get that specific quote ID in the database. (Don't worry, this works with \`!guild\` too.)
             \`!guild <guild id>\` will look at quotes from the specified guild.
             `,
         usage: [ 'quote', 'quote me', 'quote !all', 'addquote' ]
