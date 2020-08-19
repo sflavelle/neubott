@@ -212,7 +212,7 @@ const quotes = sql.define('quotes', {
         qRNG = args.find(num => !isNaN(num)) 
             ? Number.parseInt(args.find(num => !isNaN(num) && num != qOptions.where.guild))-1 
             : Math.floor(Math.random()*quotes.length);
-        console.log('rng: ' + qRNG);
+        if (qRNG >= quotes.length) { return message.channel.send(`${error} I only have **${quotes.length}** quotes to show.`) };
         const quote = quotes[qRNG];
         qALL = quotes.length;
         // console.log("Quote object: " + JSON.stringify(quote, null, 4));
