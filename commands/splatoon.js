@@ -12,7 +12,7 @@ module.exports = {
         long: `
                 "*Y'all know what time it is!*"
 
-                Fetches the following details:
+                Fetches the following details for Splatoon 2:
 
                 - Time left for current stages
                 - Current stages for: Turf War, Ranked Battle, League Battle

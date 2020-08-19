@@ -12,6 +12,16 @@ const sql = new Sequelize('database', 'user', 'password', {
     storage: './data/quotes.sqlite'
 });
 
+/*
+    QUOTES TODO
+
+    - Change !all
+        Should look only at servers that the user calling the command is in
+        (Unless the owner is calling it?)
+    - //quote set
+        what to set? timestamp, authorid, msgid?
+*/
+
 const quotes = sql.define('quotes', {
     id: {
         type: Sequelize.INTEGER,
@@ -62,7 +72,7 @@ const quotes = sql.define('quotes', {
             \`a number\` will get that specific quote ID in the database. (Don't worry, this works with \`!guild\` too.)
             \`!guild <guild id>\` will look at quotes from the specified guild.
             `,
-        usage: [ 'quote', 'quote me', 'quote !all', 'addquote' ]
+        usage: [ 'quote', 'quote me', 'addquote' ]
     },
     async ready(client) {
             client.quotes = quotes;
