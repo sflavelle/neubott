@@ -191,7 +191,7 @@ const quotes = sql.define('quotes', {
                     this.add(message, args, false);
                     return;
                 case 'set':
-                    return message.channel.send(`${error} There's nothing to set because this still isn't ready.`);
+                    return message.channel.send(`${error} There's nothing to set because this isn't ready.`);
                     break;
                 case 'count':
                     let count;
@@ -209,10 +209,10 @@ const quotes = sql.define('quotes', {
         if (quotes.length === 0 ) { return message.channel.send(`${error} There aren't any quotes for this search!`) };
         // Pick a random one
         // (OR get the ID the user has picked)
-        qRNG = args.find(num => {typeof num === 'integer' && num !== qOptions.where.guild})
-            ? args.find(num => {typeof num === 'integer' && num !== qOptions.where.guild})
+        qRNG = args.find(num => !isNaN(num)) 
+            ? Number.parseInt(args.find(num => !isNaN(num)))-1 
             : Math.floor(Math.random()*quotes.length);
-
+        console.log('rng: ' + qRNG);
         const quote = quotes[qRNG];
         qALL = quotes.length;
         // console.log("Quote object: " + JSON.stringify(quote, null, 4));
