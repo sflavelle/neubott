@@ -210,7 +210,7 @@ const quotes = sql.define('quotes', {
         // Pick a random one
         // (OR get the ID the user has picked)
         qRNG = args.find(num => !isNaN(num)) 
-            ? Number.parseInt(args.find(num => !isNaN(num)))-1 
+            ? Number.parseInt(args.find(num => !isNaN(num) && num != qOptions.where.guild))-1 
             : Math.floor(Math.random()*quotes.length);
         console.log('rng: ' + qRNG);
         const quote = quotes[qRNG];
