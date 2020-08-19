@@ -10,13 +10,23 @@ module.exports = {
         short: `Here are the battle stages today!`,
         usage: [ 'splatoon' ],
         long: `
-                This command will call the site https://splatoon2.ink/ which uses Nintendo Switch Online APIs to retrieve information about the current stages available in Turf War, Ranked Battle and League Battle.
-                It will also see if Grizzco is open for Salmon Run shifts, and if so displays the stage played on, weapons available, and what the reward is.
+                "*Y'all know what time it is!*"
 
-                If Grizzco is closed, this command will let you know when it is next available.
+                Fetches the following details:
 
-                Currently this command won't tell you if a Splatfest is currently active.
-                `
+                - Time left for current stages
+                - Current stages for: Turf War, Ranked Battle, League Battle
+                - Salmon Run availability
+                - Salmon Run stage, weapons, and reward
+                - Splatfest availability
+                - Splatfest teams, time remaining, Shifty Station
+
+                **SPLATFEST**
+                When a Splatfest is active, there are changes to how this command works.
+                
+                The details for Battle mode stages will be replaced with a new message.
+                This message shows you the current Splatfest's teams, as well as the current stages and the Splatfest's Shifty Station.
+            `
 
     },
     async execute(message, args) {
@@ -31,13 +41,12 @@ module.exports = {
         }
 
         // Let's try to make a cache here
-        let dataBattle = ( FS.existsSync('./resources/.cache/spl2-battle.json') ) ? FS.readFileSync('./resources/.cache/spl2-battle.json', 'utf8') : new Object();
-        dataBattle = JSON.parse(dataBattle);
+        let dataBattle = FS.existsSync('./.cache/spl2-battle.json') ? JSON.parse(FS.readFileSync('./.cache/spl2-battle.json', 'utf8')) : new Object();
         // If it doesn't exist, pull the data and save it
-        if (dataBattle.length === 0 || dataBattle.regular[0].end_time < Date.now()/1000) {
+        if (dataBattle.length === 0 || !dataBattle.regular || (dataBattle.regular && dataBattle.regular[0].end_time < Date.now()/1000)) {
             const reqBattle = await axios.get('/data/schedules.json', options);
             dataBattle = reqBattle.data;
-            FS.writeFileSync('./resources/.cache/spl2-battle.json', JSON.stringify(dataBattle, null, 2));
+            FS.writeFileSync('./.cache/spl2-battle.json', JSON.stringify(dataBattle, null, 2));
         };
 
         var timeEndBattle = new Date(dataBattle.regular[0].end_time);
@@ -54,6 +63,27 @@ module.exports = {
         // }
         let TSend = Date.now();
 
+        // Before we post, let's check if a Splatfest is running
+
+        let dataSplatfest = FS.existsSync('./.cache/spl2-fest.json') ? JSON.parse(FS.readFileSync('./.cache/spl2-fest.json', 'utf-8')) : new Object();
+        if (dataSplatfest.length === 0 || !dataSplatfest.na || (dataSplatfest.na && dataSplatfest.na.festivals[0].times.end < Date.now()/1000)) {
+            const reqBattle = await axios.get('/data/festivals.json', options);
+            dataSplatfest = reqBattle.data;
+            FS.writeFileSync('./.cache/spl2-fest.json', JSON.stringify(dataSplatfest, null, 2));
+        };
+        var timeEndFest = new Date(dataSplatfest.na.festivals[0].times.end);
+        var timeLeftFest = Math.floor(Math.abs(timeEndFest - timeRightNow))*1000;
+
+        const FestEmbed = new Discord.MessageEmbed()
+        .setTitle(`It's Splatfest! Team ${dataSplatfest.na.festivals[0].names.alpha_short} vs. Team ${dataSplatfest.na.festivals[0].names.bravo_short}`)
+        .setDescription(`Pick a team and get splattin' - you've got ${humanizeDuration(timeLeftFest, { largest: 2 })}`)
+        .setImage('https://splatoon2.ink/assets/splatnet' + dataSplatfest.na.festivals[0].images.panel)
+        .addField('Splatfest Stages', dataBattle.regular[0].stage_a.name + '\n' + dataBattle.regular[0].stage_b.name, true)
+        .addField('Shifty Station', dataSplatfest.na.festivals[0].special_stage.name, true)
+        .setURL('https://splatoon2.ink/')
+        .setTimestamp()
+        .setFooter('Data provided by Splatoon2.ink, processed in ' + (TSend - TSbegin) + 'ms','https://splatoon2.ink/favicon-32x32.png');
+
         const TurfEmbed = new Discord.MessageEmbed()
             .setColor('ORANGE')
             .setTitle('Splatoon 2: Current Stages')
@@ -66,17 +96,18 @@ module.exports = {
             .setTimestamp()
             .setFooter('Data provided by Splatoon2.ink, processed in ' + (TSend - TSbegin) + 'ms','https://splatoon2.ink/favicon-32x32.png')
 
-        message.channel.send(null, { embed: TurfEmbed })
+        message.channel.send((timeRightNow > dataSplatfest.na.festivals[0].times.start && timeRightNow < dataSplatfest.na.festivals[0].times.end) ? FestEmbed : TurfEmbed);
+        // message.channel.send(FestEmbed); // For testing
      
         // Now for the Salmon Run data
         TSbegin = Date.now();
-        let dataSR = ( FS.existsSync('./resources/.cache/spl2-salmonrun.json') ) ? JSON.parse(FS.readFileSync('./resources/.cache/spl2-salmonrun.json', 'utf8')) : [];
+        let dataSR = FS.existsSync('./.cache/spl2-salmonrun.json') ? JSON.parse(FS.readFileSync('./.cache/spl2-salmonrun.json', 'utf8')) : new Object();
 
         if (dataSR.length === 0 || !(dataSR.details && dataSR.details[0].end_time < Date.now()/1000)) {
             const reqSR = await axios.get('/data/coop-schedules.json', options);
             const reqSRG = await axios.get('/data/timeline.json', options);
             dataSR = [].concat(reqSR.data, reqSRG.data);
-            FS.writeFileSync('./resources/.cache/spl2-salmonrun.json', JSON.stringify(dataSR, null, 2));
+            FS.writeFileSync('./.cache/spl2-salmonrun.json', JSON.stringify(dataSR, null, 2));
             }
         var timeEndSR = new Date(dataSR[0].details[0].end_time);
         let SRstage = dataSR[0].details[0].stage;
