@@ -1,5 +1,5 @@
 const SQLite = require('sequelize');
-const { Sequelize } = require('sequelize');
+const { Sequelize, Op } = require('sequelize');
 const moment = require('moment');
 const Discord = require('discord.js');
 
@@ -68,9 +68,9 @@ const quotes = sql.define('quotes', {
             
             **MODIFIERS**
             Adding modifiers after certain quote commands can change how quotes are selected.
-            \`!all\` will look at quotes from every server - not just this one.
-            \`a number\` will get that specific quote ID in the database. (Don't worry, this works with \`!guild\` too.)
+            \`a number\` will get that specific quote ID in the database, eg. \`quote 20\`. (Don't worry, this works with \`!guild\` too.)
             \`!guild <guild id>\` will look at quotes from the specified guild.
+            \`!guild all\` will search all guilds you and the bot are both in.
             `,
         usage: [ 'quote', 'quote me', 'addquote' ]
     },
@@ -180,14 +180,28 @@ const quotes = sql.define('quotes', {
         
 
         // MODIFIERS 
-        if (args && args.includes("!all")) {
-            // Get ALL quotes, from every guild
-            delete qOptions.where.guild;
-        }
         if (args && args.includes("!guild")) {
-            if (args.includes("!all")) { return message.channel.send(`${error} You can't use \`!all\` and \`!guild\` at the same time.`)};
-            // search a different guild
-            qOptions.where.guild = args[args.indexOf("!guild")+1];
+            // Search a specific guild for quotes
+            // Or, if the guild id is "all", search guilds user is in
+            guildSearch = args[args.indexOf("!guild")+1];
+            if (guildSearch === "all") {
+                // Get ALL quotes, from every guild if the owner is calling it
+                if (message.author.id === message.client.config.owner) {delete qOptions.where.guild;}
+                else {
+                    let guildFilter = new Array();
+
+                    message.client.guilds.cache.forEach(g => {
+                            try {
+                                // Try to fetch the member object for the ID of the user
+                                // If it works, that user is in that guild and the guild ID
+                                // should be included in the search parameters
+                                const fetch = g.member(message.author.id) ;
+                                if (fetch) guildFilter.push(g.id);
+                            } catch (e) { return }
+                        });
+                    qOptions.where.guild = {[Op.or]: guildFilter};
+                }
+            } else {qOptions.where.guild = args[args.indexOf("!guild")+1];}
         }
 
         let qRNG;
