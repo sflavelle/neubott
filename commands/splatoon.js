@@ -77,7 +77,7 @@ module.exports = {
 
         const FestEmbed = new Discord.MessageEmbed()
         .setTitle(`It's Splatfest! Team ${dataSplatfest.na.festivals[0].names.alpha_short} vs. Team ${dataSplatfest.na.festivals[0].names.bravo_short}`)
-        .setDescription(`Pick a team and get splattin' - you've got ${humanizeDuration(timeLeftFest, { largest: 2 })}`)
+        .setDescription(`Pick a team and get splattin' - you've got **${humanizeDuration(timeLeftFest, { largest: 2 })}**`)
         .setImage('https://splatoon2.ink/assets/splatnet' + dataSplatfest.na.festivals[0].images.panel)
         .addField('Splatfest Stages', dataBattle.regular[0].stage_a.name + '\n' + dataBattle.regular[0].stage_b.name, true)
         .addField('Shifty Station', dataSplatfest.na.festivals[0].special_stage.name, true)
