@@ -1,4 +1,3 @@
-const SQLite = require('sequelize');
 const { Sequelize, Op } = require('sequelize');
 const moment = require('moment');
 const Discord = require('discord.js');
@@ -77,10 +76,6 @@ const quotes = sql.define('quotes', {
     async ready(client) {
             client.quotes = quotes;
             client.quotes.sync();
-
-        // Common commands
-        // client.getQuote = sql.prepare("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1");
-        // client.addQuote = sql.prepare("INSERT OR REPLACE INTO quotes (id, content, author_id, author_name, added_by, guild, timestamp) VALUES (@id, @content, @author_id, @author_name, @added_by, @guild, @timestamp);")
     },
     format(message, quote, qid, qlength){
         // This is the format that the quotes in other commands will use
@@ -212,7 +207,7 @@ const quotes = sql.define('quotes', {
             switch (args[0]){
                 case 'add': 
                     args.shift();
-                    this.add(message, args, false);
+                    this.add(message, args);
                     return;
                 case 'set':
                     return message.channel.send(`${error} There's nothing to set because this isn't ready.`);
@@ -247,8 +242,7 @@ const quotes = sql.define('quotes', {
         
 
     },
-    async add(message, args, testmode) {
-        if (this.readOnly) {return message.channel.send(`${error} Adding quotes is disabled at the moment - the bot owner is probably fixing something.`)};
+    async add(message, args) {
 
         const quote = await this.parse(message, args);
         // console.log("Quote object: " + JSON.stringify(quote, null, 4));
@@ -263,15 +257,6 @@ const quotes = sql.define('quotes', {
                 return message.channel.send(`${error} The parser function returned an empty quote object for some reason. :thinking:`)
         }
 
-        // If we're testing the add mode, stop here and display the parsed quote
-        if (testmode) { 
-            message.channel.send(this.format(quote));
-
-            // ALSO POST THE QUOTE OBJECT FOR DEBUGGING
-            message.channel.send(JSON.stringify(quote, null, 4), { code: 'json' });
-            return
-        };
-
         try {
             const addedQuote = await message.client.quotes.create(quote);
             
@@ -281,7 +266,7 @@ const quotes = sql.define('quotes', {
             .setDescription(this.format(addedQuote, addedQuote.id));
             
             message.channel.send(embedQuote);
-            return message.react(':thumbsup:');
+            return message.react('👍');
         } catch (e) {
             switch (e.name) {
                 case 'SequelizeUniqueConstraintError':
