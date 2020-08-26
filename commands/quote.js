@@ -79,7 +79,7 @@ const quotes = sql.define('quotes', {
     },
     format(message, quote, qid, qlength){
         // This is the format that the quotes in other commands will use
-        const { content, authorID, authorName, timestamp, } = quote;
+        const { content, authorID, authorName, timestamp } = quote;
 
         // Get timestamp format
         const timestampFormat = new Intl.DateTimeFormat('en-us', {
@@ -88,7 +88,7 @@ const quotes = sql.define('quotes', {
             year: 'numeric'
         });
         let authorCheck;
-        try { authorCheck = message.guild.member(authorID); console.log(JSON.stringify(authorCheck, null, 4)); } catch (e) { authorCheck = false; }
+        try { authorCheck = message.guild.member(authorID) } catch (e) { authorCheck = false; }
 
         // QUOTE PARAMETERS
         // 
@@ -235,10 +235,12 @@ const quotes = sql.define('quotes', {
         const quote = quotes[qRNG];
         qALL = quotes.length;
         // console.log("Quote object: " + JSON.stringify(quote, null, 4));
+        const embedQuote = new Discord.MessageEmbed()
+        .setDescription(this.format(message, quote, qRNG+1, qALL));
 
         // Post the quote and stop execution
         // An allowedMentions object is used here to disallow the bot from pinging anyone
-        return message.channel.send(`${this.format(message, quote, qRNG+1, qALL)}`, { allowedMentions: { users: []}});
+        return message.channel.send(embedQuote);
         
 
     },
@@ -259,11 +261,12 @@ const quotes = sql.define('quotes', {
 
         try {
             const addedQuote = await message.client.quotes.create(quote);
+            const quoteCount = await message.client.quotes.count({ where: { guild: message.guild.id }})
             
             const embedQuote = new Discord.MessageEmbed()
             .setColor('#00ff00')
             .setTitle('Quote added successfully')
-            .setDescription(this.format(addedQuote, addedQuote.id));
+            .setDescription(this.format(message, addedQuote, quoteCount));
             
             message.channel.send(embedQuote);
             return message.react('👍');
