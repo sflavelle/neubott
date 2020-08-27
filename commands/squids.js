@@ -1,5 +1,6 @@
 const { Sequelize, Op } = require('sequelize');
 const Discord = require('discord.js');
+const { remove } = require('./quote');
 
 const config = {
     name: 'squids',
@@ -62,8 +63,14 @@ module.exports = {
                     args.shift();
                     this.add(message, args);
                     return;
+                case 'delete':
                 case 'remove':
-                    return message.channel.send(`${error} There's nothing to set because this isn't ready.`);
+                    args.shift();
+                    if (args.length === 0) { return message.channel.send(`${error} Remove *what*, ${message.author}?`) }
+                    let searchTerm = args[0];
+                    return this.remove(message, searchTerm, false);
+                case 'undo':
+                    return this.remove(message, null, true);
                 default:
             }
         }
@@ -101,9 +108,11 @@ module.exports = {
         for (const thisPrefix of message.client.config.prefix) {
             if (message.content.toLowerCase().startsWith(thisPrefix)) prefix = thisPrefix;
         }
-        for (string of args) {
-            string.replace(/\?s=\d{2}$/, '')
+
+        for (var i=0; i < args.length; i++) {
+            args[i] = args[i].replace(/\?s=\d{2}$/, '');
         }
+
         const newItem = args.join('\n');
 
         try {
@@ -131,9 +140,125 @@ module.exports = {
                     return message.channel.send(e.stack, { code: 'js' });
             }
         }
+    },
+    async remove(message, search, undo, undoitem) {
+        switch (undo) {
+            case 'true':
+                /* 
+                UNDO is a quick delete
+                If called with an item it will delete it immediately
+                If called without, it will delete the last item immediately
+                */
+                let deletedItem;
+                if (undoitem) { deletedItem = undoitem; db.destroy({ where: item[0] });}
+                else {
+                    const delOptions = { order: [['createdAt', 'DESC']]};
+                    deletedItem = db.findOne(delOptions);
+                    db.destroy({ where: deletedItem });
 
-        // return message.channel.send(`${error} This also isn't ready yet.`);
+                }
+                
+                const undoConfirm = new Discord.MessageEmbed()
+                    .setColor('#ffff00')
+                    .setTitle(`Undid your mistake.`)
+                    .setDescription(deletedItem.content);
 
+                return message.channel.send(undoConfirm)
+                .then((msg) => msg.delete({ timeout: 10000 }));
+            case 'false':
+            default:
+                // If undo is false, start search
 
+                if (!search) return message.channel.send(`${error} Are you really going to ask me to delete something without knowing what you want to delete?`)
+
+                let Options = {
+                    where: {
+                        content: { [Op.substring]: search }
+                    }
+                };
+                
+                const item = await db.findAll(Options); 
+
+                // create embed to act on later
+                let deleteConfirm = new Discord.MessageEmbed();
+
+                // Create filter for the delete confirm
+                // Making sure that only the user initiating the delete
+                // can confirm
+                const deleteFilter = (reaction, user) => {
+                    return ['✔','❌'].includes(reaction.emoji.name) && user.id === message.author.id;
+                };
+
+                const delConfirmFunc = (msg) => {
+                    msg.react('✔');
+                    msg.react('❌');
+                    msg.awaitReactions(deleteFilter, { max: 1, time:60000, errors: ['time'] })
+                        .then(collected => {
+                            const reaction = collected.first();
+
+                            switch (reaction.emoji.name) {
+                                case '✔':
+                                    // remove the item from the database
+                                    db.destroy(Options);
+                                    // modify the original message to show it was deleted.
+                                    deleteConfirm.footer = null;
+                                    msg.edit(deleteConfirm
+                                        .setColor('#ff0000')
+                                        .setTitle(`Item deleted.`));
+                                    msg.delete({ timeout: 15000 });
+                                    return;
+                                case '❌':
+                                    deleteConfirm.footer = null;
+                                    msg.edit(deleteConfirm
+                                        .setTitle(`Delete cancelled.`));
+                                    msg.delete({ timeout: 15000 });
+                                    return;
+                            }
+                            return
+                        })
+                        // If we run out of time
+                        .catch(collected => {
+                            msg.edit(deleteConfirm
+                                .setTitle(`Delete cancelled.`)
+                                .setFooter(`The deletion was not confirmed in time.`));
+                            msg.delete({ timeout: 15000 });
+                            return;
+                        })
+
+                }
+
+                    switch (item.length) {
+                        case 0:
+                            return message.channel.send(`${error} There aren't any ${config.msgs.descriptorPlural} for this search!`);
+                        case 1:
+                            deleteConfirm.setColor('#ffff00')
+                                .setTitle(`Found your ${config.msgs.descriptorSingular}. Delete?`)
+                                .setDescription(item[0].content)
+                                .setFooter('React with ✔ or ❌ below.');
+                            
+
+                            
+                            message.channel.send(deleteConfirm)
+                                .then((msg) => delConfirmFunc(msg));
+                            break;
+                        default:
+                            let matchesText = '';
+                            item.forEach(value => {
+                                matchesText += `${value.content}\n`
+                            });
+
+                            deleteConfirm.setColor('#ffff00')
+                            .setTitle(`Matched ${item.length} ${config.msgs.descriptorPlural}. Delete?`)
+                            .setDescription(matchesText)
+                            .setFooter('React with ✔ or ❌ below.');
+
+                            message.channel.send(deleteConfirm)
+                                .then((msg) => delConfirmFunc(msg))
+                                .catch(e => {
+                                    if (e.code === 50035) return message.channel.send(`${error} That's too many items **(${item.length})**!`)
+                                });
+                            
+                    }
+        }
     }
 }
