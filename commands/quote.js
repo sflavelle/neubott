@@ -66,11 +66,11 @@ const quotes = sql.define('quotes', {
             Or with text: \`quote add "This is the quote" @someone\`
             
             **MODIFIERS**
-            Adding modifiers after certain quote commands can change how quotes are selected.
-            \`a number\` will get that specific quote ID in the database, eg. \`quote 20\`. (Don't worry, this works with \`!guild\` too.)
+            Adding modifiers change how quotes are selected. They should work with each other.
+            \`a number\` will get that specific quote ID in the database, eg. \`quote 20\`.
             \`!guild <guild id>\` will look at quotes from the specified guild.
             \`!guild all\` will search all guilds you and the bot are both in.
-            \`!search <keyword>\` will search quotes matched by default or with !guild for a keyword. **One word only.**
+            \`!search <keyword>\` filters selected quotes by a keyword. **One word only.**
             `,
         usage: [ 'quote', 'quote me', 'addquote' ]
     },
