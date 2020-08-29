@@ -196,7 +196,12 @@ const quotes = sql.define('quotes', {
                         });
                     qOptions.where.guild = {[Op.or]: guildFilter};
                 }
-            } else {qOptions.where.guild = args[args.indexOf("!guild")+1];}
+            } else {qOptions.where.guild = new String(guildSearch);}
+        }
+        if (args && args.includes("!search")) {
+            // Find quotes with specific search terms
+            textSearch = args[args.indexOf("!search")+1];
+            qOptions.where.content = { [Op.substring]: textSearch };
         }
 
         let qRNG;
@@ -228,7 +233,7 @@ const quotes = sql.define('quotes', {
         if (quotes.length === 0 ) { return message.channel.send(`${error} There aren't any quotes for this search!`) };
         // Pick a random one
         // (OR get the ID the user has picked)
-        qRNG = args.find(num => !isNaN(num)) 
+        qRNG = args.find(num => !isNaN(num) && num != qOptions.where.guild) 
             ? Number.parseInt(args.find(num => !isNaN(num) && num != qOptions.where.guild))-1 
             : Math.floor(Math.random()*quotes.length);
         if (qRNG >= quotes.length) { return message.channel.send(`${error} I only have **${quotes.length}** quotes to show.`) };
