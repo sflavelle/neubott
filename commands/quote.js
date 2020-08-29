@@ -70,6 +70,7 @@ const quotes = sql.define('quotes', {
             \`a number\` will get that specific quote ID in the database, eg. \`quote 20\`. (Don't worry, this works with \`!guild\` too.)
             \`!guild <guild id>\` will look at quotes from the specified guild.
             \`!guild all\` will search all guilds you and the bot are both in.
+            \`!search <keyword>\` will search quotes matched by default or with !guild for a keyword. **One word only.**
             `,
         usage: [ 'quote', 'quote me', 'addquote' ]
     },
