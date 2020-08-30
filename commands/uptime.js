@@ -9,5 +9,9 @@ module.exports = {
     },
     execute(message, args) {
       message.channel.send(`This process has been running for ${humanizeDuration(process.uptime()*1000, { round: true, maxDecimalPoints:1 })}`);
+    },
+    idle(message, args) {
+      message.channel.send(`I've been running for **${humanizeDuration(process.uptime()*1000, { round: true, maxDecimalPoints:1 })}** so far!`);
     }
+
 }

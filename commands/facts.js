@@ -275,5 +275,11 @@ module.exports = {
                             
                     }
         }
+    },
+    async idle(message, args) {
+        // Defines a script to execute for the idle function
+        // In this case, simply calls execute() with no arguments
+        this.execute(message, []);
     }
+
 }

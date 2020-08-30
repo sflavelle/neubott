@@ -19,5 +19,15 @@ module.exports = {
             } catch (e) { return message.channel.send(`${error} I can't find it.`) }}
         const Bigmoji = new Discord.MessageAttachment(emoji.url)
         return message.channel.send(Bigmoji); //Print it
+    },
+    async idle(message, args) {
+        // A variation on the normal command
+        // This version for the idle system grabs a random emoji from its cache
+
+        const emoji = message.client.emojis.cache.random();
+        const Bigmoji = new Discord.MessageAttachment(emoji.url)
+        return message.channel.send(Bigmoji); //Print it
+
     }
+
 }
