@@ -11,11 +11,9 @@ client.config = config;
 
 // Load idle system
 client.idle = config.idle;
+const idleExecute = require('./helpers/idlesystem');
 // Setup idle timer
 client.idle.timers = [];
-const idleTimeout = 6*60; // 6 hours
-const idleTimeoutDev = 45 // 45 minutes
-
 
 // load emoji variables for success/error messages
 const { success, error } = config.emoji;
@@ -39,6 +37,7 @@ client.once('ready', () => {
 });
 
 // Message Handler
+client.on('message', message => idleExecute(client, message));
 client.on('message', message => {
 	// Allow multiple prefixes?
 	let prefix = false;
@@ -52,38 +51,7 @@ client.on('message', message => {
 	const regexMatch = client.commands.find(cmd => cmd.regexAlias && message.content.match(cmd.regexAlias))
 	if ((!message.content.toLowerCase().startsWith(prefix) || message.author.bot) && regexMatch) {regexMatch.execute(message, []); return}
 
-	if (!message.content.toLowerCase().startsWith(prefix) || message.author.bot) {
-		// IDLE SYSTEM
-		// We set a timer after each message here
-		// It resets on each message
-		// If the timer runs out, we execute a command with idle function
-
-		function idleExecute(client, message) {
-
-			let idleCmds = client.commands.filter(cmd => cmd.idle);
-		
-		
-			console.log(`Executing idle for ${message.channel.name}`);
-			const command = idleCmds.random();
-			command.icon = '🕓'; // override icon to show this is an idle message
-			command.idle(message);
-		
-		}
-
-		if (client.idle.channels.includes(message.channel.id)) {
-			// First, clear any existing timer
-			clearTimeout(client.idle.timers[message.channel.id]);
-			// Then, set it again
-			client.idle.timers[message.channel.id] = setTimeout(idleExecute, idleTimeout*60*1000, client, message)
-		}
-		else if (client.idle.channelsDev.includes(message.channel.id)) {
-			// same thing but faster
-			clearTimeout(client.idle.timers[message.channel.id]);
-			client.idle.timers[message.channel.id] = setTimeout(idleExecute, idleTimeoutDev*60*1000, client, message)
-		}
-		
-		// then return, because we shouldn't try to process a command after this point
-		return};
+	if (!message.content.toLowerCase().startsWith(prefix) || message.author.bot) {return};
 		
 	// Commands by command
 	const commandName = args.shift().toLowerCase();
