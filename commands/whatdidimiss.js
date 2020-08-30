@@ -3,9 +3,12 @@ const Discord = require('discord.js');
 
 const config = {
     name: 'whatdidimiss',
+    aliases: ["whatimissed"],
+    regexAlias: /what (else )?(did )?I miss(ed)?$/i,
     icon: '275045744002465792',
     help: {
         short: `You missed SO MUCH`,
+        long: `Simple command that tells you one of any number of things you may have 'missed' while you were AFK.`,
         visible: true
     },
     msgs: {
@@ -46,7 +49,10 @@ const { success, error } = require('../config.json').emoji;
 module.exports = {
     name: config.name,
     icon: config.icon,
-    help: config.help,
+    regexAlias: config.regexAlias,
+    help: config.help 
+        + "\n\n"
+        + `You can add more with the \`add\` subcommand, or delete one or more that might be in bad taste with the \`delete\` or \`remove\` command.`,
     async ready(client) {
         db.sync();
     },

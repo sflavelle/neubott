@@ -4,6 +4,7 @@ const Discord = require('discord.js');
 const config = {
     name: 'facts',
     icon: '🎙',
+    regexAlias: /^(bott? ?|bucket |neubott )?facts$/i,
     help: {
         short: `totally true real facts`,
         visible: true
@@ -50,7 +51,12 @@ const { success, error } = require('../config.json').emoji;
 module.exports = {
     name: config.name,
     icon: config.icon,
-    help: config.help,
+    regexAlias: config.regexAlias,
+    help: config.help 
+        + "\n\n"
+        + `You can add more with the \`add\` subcommand, or delete one or more that might be in bad taste with the \`delete\` or \`remove\` command.
+           By default servers will be shown 'global' items and items that were added in their own server.
+           The bot owner can add items with the \`!global\` to allow them to show up in all servers.`,
     async ready(client) {
         db.sync();
     },

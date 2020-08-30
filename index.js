@@ -35,11 +35,16 @@ client.on('message', message => {
 	for (const thisPrefix of client.config.prefix) {
 		if (message.content.toLowerCase().startsWith(thisPrefix)) prefix = thisPrefix;
 	}
+	
+	const args = message.content.slice(prefix.length).trim().split(/ +/);
+	
+	// Command regex string match
+	const regexMatch = client.commands.find(cmd => cmd.regexAlias && message.content.match(cmd.regexAlias))
+	if ((!message.content.toLowerCase().startsWith(prefix) || message.author.bot) && regexMatch) {regexMatch.execute(message, []); return}
 
-	// Commands
+	// Commands by command
 	if (!message.content.toLowerCase().startsWith(prefix) || message.author.bot) return;
 
-	const args = message.content.slice(prefix.length).trim().split(/ +/);
 	const commandName = args.shift().toLowerCase();
 
 	const command = client.commands.get(commandName)

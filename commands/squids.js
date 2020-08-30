@@ -5,6 +5,7 @@ const { remove } = require('./quote');
 const config = {
     name: 'squids',
     icon: '🦑',
+    regexAlias: /^(gimme (squids|octos)|🦑 ?📷)$/i,
     help: {
         short: `on-demand squidkids`,
         visible: true
@@ -47,7 +48,10 @@ const { success, error } = require('../config.json').emoji;
 module.exports = {
     name: config.name,
     icon: config.icon,
-    help: config.help,
+    regexAlias: config.regexAlias,
+    help: config.help 
+        + "\n\n"
+        + `You can add more with the \`add\` subcommand, or delete one or more that might be in bad taste with the \`delete\` or \`remove\` command.`,
     async ready(client) {
         db.sync();
     },
