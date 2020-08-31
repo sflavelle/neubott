@@ -9,7 +9,7 @@ module.exports = async (client, message) => {
 		if (message.content.toLowerCase().startsWith(thisPrefix)) prefix = thisPrefix;
 	}
 
-    if (!message.content.toLowerCase().startsWith(prefix) || !message.author.bot) {
+    if (!message.content.toLowerCase().startsWith(prefix) && !message.author.bot) {
 		// IDLE SYSTEM
 		// We set a timer after each message here
 		// It resets on each message
@@ -22,7 +22,7 @@ module.exports = async (client, message) => {
 		
 			console.log(`Executing idle for ${message.channel.name}`);
 			const command = idleCmds.random();
-			command.icon = '🕓'; // override icon to show this is an idle message
+			command.icon = '🕓' + command.icon; // override icon to show this is an idle message
 			command.idle(message);
 		
 		}
