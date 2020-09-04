@@ -22,9 +22,12 @@ module.exports = async (client, message) => {
 		
 			console.log(`Executing idle for ${message.channel.name}`);
 			const command = idleCmds.random();
-			command.icon = '🕓' + command.icon; // override icon to show this is an idle message
+			// temporarily prepend idle icon
+			let iconVar = command.icon;
+			command.icon = "🕓";
 			command.idle(message);
-		
+			// reset icon
+			command.icon = iconVar;
 		}
 
 		if (client.idle.channels.includes(message.channel.id)) {
