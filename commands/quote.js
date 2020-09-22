@@ -123,6 +123,9 @@ const quotes = sql.define('quotes', {
                 if (quotemsg.id) {
                     // We got the linked message, now return the quote object
                     console.log(`[${this.name}] fetched message ${quotemsg.id} from ${quotemsg.author.username}!`);
+
+                    // If the message content starts with a mention, strip it
+                    if (quotemsg.content.startsWith('<@')) {quotemsg.content = quotemsg.content.replace(/<@!?(\d+)>/, '').trim()};
                     // console.log(quotemsg);
                     return {
                         content: quotemsg.content,
@@ -152,7 +155,7 @@ const quotes = sql.define('quotes', {
             if (authorName.match(/^<!?@(\d+)>/)) {
                 //if supplied name is a mention, parse it
                 authorID = authorName.match(/^<@!?(\d+)>/)[1];
-                authorName = message.guild.member(client.users.cache.get(authorID)) ? message.guild.member(client.users.cache.get(authorID)).nickname : client.users.cache.get(authorID).username;
+                authorName = message.guild.member(message.client.users.cache.get(authorID)) ? message.guild.member(message.client.users.cache.get(authorID)).nickname : message.client.users.cache.get(authorID).username;
             } else { authorID = null };
 
             return {
@@ -215,6 +218,10 @@ const quotes = sql.define('quotes', {
                     args.shift();
                     this.add(message, args);
                     return;
+                case 'parse':
+                    args.shift();
+                    this.add(message, args, true);
+                    return;
                 case 'set':
                     return message.channel.send(`${error} There's nothing to set because this isn't ready.`);
                     break;
@@ -250,7 +257,7 @@ const quotes = sql.define('quotes', {
         
 
     },
-    async add(message, args) {
+    async add(message, args, parsemode) {
 
         const quote = await this.parse(message, args);
         // console.log("Quote object: " + JSON.stringify(quote, null, 4));
@@ -263,6 +270,17 @@ const quotes = sql.define('quotes', {
                 return message.channel.send(`${error} You need to supply either a Discord message link or a quote of format \`"Quote text\" @QuoteAuthor\`.`)
             case undefined:
                 return message.channel.send(`${error} The parser function returned an empty quote object for some reason. :thinking:`)
+        }
+
+        if (parsemode) {
+
+            const parsedQuote = new Discord.MessageEmbed()
+            .setTitle(`Here is your quote as parsed by ${message.client.user.username}`)
+            .setDescription(this.format(message, quote));
+            
+            message.channel.send(parsedQuote);
+            return;
+
         }
 
         try {
