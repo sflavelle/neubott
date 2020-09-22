@@ -74,8 +74,12 @@ module.exports = {
                     args.shift();
                     this.add(message, args);
                     return;
+                case 'delete':
                 case 'remove':
-                    return message.channel.send(`${error} There's nothing to set because this isn't ready.`);
+                    args.shift();
+                    if (args.length === 0) { return message.channel.send(`${error} Remove *what*, ${message.author}?`) }
+                    let searchTerm = args[0];
+                    return this.remove(message, searchTerm, false);
                 default:
             }
         }
@@ -121,7 +125,7 @@ module.exports = {
         for (string of args) {
             string.replace(/\?s=\d{2}$/, '')
         }
-        const newItem = args.join('\n');
+        const newItem = args.join(' ');
 
         try {
             const addedItem = await db.create({
