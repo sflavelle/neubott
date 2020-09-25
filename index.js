@@ -1,6 +1,8 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 
+const schedule = require('node-schedule');
+
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
 
@@ -34,6 +36,15 @@ for (const file of commandFiles) {
 
 client.once('ready', () => {
 	console.log(`Logged in (${client.user.tag})`);
+
+	// Setup scheduled events
+	const scheduleFiles = fs.readdirSync('./events/scheduled').filter(file => file.endsWith('.js'));
+	for (const file of scheduleFiles) {
+		const eventScheduled = require(`./events/scheduled/${file}`);
+
+		console.log(`Loaded cron events`)
+		eventScheduled.execute(client);
+	}
 });
 
 // Message Handler
