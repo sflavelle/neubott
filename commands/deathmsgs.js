@@ -5,6 +5,7 @@ const config = {
     name: 'deathmsgs',
     aliases: ["deaths"],
     icon: '💀',
+    owner: false,
     help: {
         short: `YOU DIED`,
         long: `This command manages death messages that are used in the bot's idle system. You can check them out regardless, but...
@@ -135,7 +136,7 @@ module.exports = {
         for (string of args) {
             string.replace(/\?s=\d{2}$/, '')
         }
-        const newItem = args.join('\n');
+        const newItem = args.join(' ');
 
         try {
             const addedItem = await db.create({
