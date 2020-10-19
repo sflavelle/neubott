@@ -226,7 +226,6 @@ const quotes = sql.define('quotes', {
                     return;
                 case 'set':
                     return message.channel.send(`${error} There's nothing to set because this isn't ready.`);
-                    break;
                 case 'count':
                     let count;
                     count = await message.client.quotes.count(qOptions);
