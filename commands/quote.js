@@ -58,8 +58,7 @@ const quotes = sql.define('quotes', {
             **GETTING QUOTES**
             \`quote\` on its own retrieves a random quote.
             \`quote me\` retrieves one of *your* quotes, if you've got one.
-            \`quote count\` gets you the number of quotes, if you just want a number.
-            
+         
             **ADDING QUOTES**
             You can add a quote in one of two ways:
             Sending me a message link: \`quote add https://discordapp.com/channels/...\`
@@ -67,10 +66,13 @@ const quotes = sql.define('quotes', {
             
             **MODIFIERS**
             Adding modifiers change how quotes are selected. They should work with each other.
-            \`a number\` will get that specific quote ID in the database, eg. \`quote 20\`.
-            \`!guild <guild id>\` will look at quotes from the specified guild.
-            \`!guild all\` will search all guilds you and the bot are both in.
-            \`!search <keyword>\` filters selected quotes by a keyword. **One word only.**
+            \`a number\` - quote ID eg. \`quote 20\`.
+            \`!guild <guild id>\` - search a guild's quotes
+            \`!guild all\` - search all guilds you and the bot are both in.
+            \`!search <keyword>\` - search by keyword. **One word only.**
+
+            **COMMANDS**
+            \`?delete\` - delete the quote
             `,
         usage: [ 'quote', 'quote me', 'addquote' ]
     },
@@ -152,7 +154,7 @@ const quotes = sql.define('quotes', {
             let [, content, authorName] = message.content.match(QuoteRegex);
             let authorID;
 
-            if (authorName.match(/^<!?@(\d+)>/)) {
+            if (authorName.match(/^<@!?(\d+)>/)) {
                 //if supplied name is a mention, parse it
                 authorID = authorName.match(/^<@!?(\d+)>/)[1];
                 authorName = message.guild.member(message.client.users.cache.get(authorID)) ? message.guild.member(message.client.users.cache.get(authorID)).nickname : message.client.users.cache.get(authorID).username;
@@ -244,10 +246,20 @@ const quotes = sql.define('quotes', {
         qRNG = args.find(num => !isNaN(num) && num != qOptions.where.guild) 
             ? Number.parseInt(args.find(num => !isNaN(num) && num != qOptions.where.guild))-1 
             : Math.floor(Math.random()*quotes.length);
+        qID = args.find(num => !isNaN(num) && num != qOptions.where.guild)
+            ? Number.parseInt(args.find(num => !isNaN(num) && num != qOptions.where.guild))-1
+            : null;
         if (qRNG >= quotes.length) { return message.channel.send(`${error} I only have **${quotes.length}** quotes to show.`) };
         const quote = quotes[qRNG];
         qALL = quotes.length;
         // console.log("Quote object: " + JSON.stringify(quote, null, 4));
+
+        if (args[args.length-1] === "?delete") {
+            if (typeof qID === "number") { return this.remove(message, quotes[qRNG]); }
+            else { return message.channel.send(`${error} Are you really going to ask me to delete something without knowing what you want to delete?`) }
+        }
+
+        //
         const embedQuote = new Discord.MessageEmbed()
         .setDescription(this.format(message, quote, qRNG+1, qALL));
 
@@ -306,6 +318,66 @@ const quotes = sql.define('quotes', {
         // return message.channel.send(`${error} This also isn't ready yet.`);
 
 
+    },
+    async remove(message, quote) {
+     
+        // create embed to act on later
+        let deleteConfirm = new Discord.MessageEmbed();
+
+        // Create filter for the delete confirm
+        // Making sure that only the user initiating the delete
+        // can confirm
+        const deleteFilter = (reaction, user) => {
+            return ['✔','❌'].includes(reaction.emoji.name) && user.id === message.author.id;
+        };
+
+        const delConfirmFunc = (msg) => {
+            msg.react('✔');
+            msg.react('❌');
+            msg.awaitReactions(deleteFilter, { max: 1, time:60000, errors: ['time'] })
+                .then(collected => {
+                    const reaction = collected.first();
+
+                    switch (reaction.emoji.name) {
+                        case '✔':
+                            // remove the item from the database
+                            message.client.quotes.destroy(quote);
+                            // modify the original message to show it was deleted.
+                            deleteConfirm.footer = null;
+                            msg.edit(deleteConfirm
+                                .setColor('#ff0000')
+                                .setTitle(`Item deleted.`));
+                            msg.delete({ timeout: 15000 });
+                            return;
+                        case '❌':
+                            deleteConfirm.footer = null;
+                            msg.edit(deleteConfirm
+                                .setTitle(`Delete cancelled.`));
+                            msg.delete({ timeout: 15000 });
+                            return;
+                    }
+                    return
+                })
+                // If we run out of time
+                .catch(collected => {
+                    msg.edit(deleteConfirm
+                        .setTitle(`Delete cancelled.`)
+                        .setFooter(`The deletion was not confirmed in time.`));
+                    msg.delete({ timeout: 15000 });
+                    return;
+                })
+
+        }
+
+        deleteConfirm.setColor('#ffff00')
+            .setTitle(`Found your quote. Delete?`)
+            .setDescription(this.format(message, quote))
+            .setFooter('React with ✔ or ❌ below.');
+        
+
+        
+        message.channel.send(deleteConfirm)
+            .then((msg) => delConfirmFunc(msg));
     },
     async idle(message, args) {
         // Defines a script to execute for the idle function
