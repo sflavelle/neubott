@@ -254,7 +254,7 @@ const quotes = sql.define('quotes', {
         // console.log("Quote object: " + JSON.stringify(quote, null, 4));
 
         if (args[args.length-1] === "?delete") {
-            if (typeof qID === "number") { return this.remove(message, quotes[qRNG]); }
+            if (typeof qID === "number" || quotes.length === 1) { return this.remove(message, quotes[qRNG]); }
             else { return message.channel.send(`${error} Are you really going to ask me to delete something without knowing what you want to delete?`) }
         }
 
