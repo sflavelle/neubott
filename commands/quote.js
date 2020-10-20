@@ -209,6 +209,19 @@ const quotes = sql.define('quotes', {
             textSearch = args[args.indexOf("!search")+1];
             qOptions.where.content = { [Op.substring]: textSearch };
         }
+        if (args && args.includes("!author")) {
+            authorSearch = args[args.indexOf("!author")+1];
+            // Search by user mention
+            if (authorSearch.match(/^<@!?(\d+)>/)) {
+                qOptions.where.authorID = authorSearch.match(/^<@!?(\d+)>/)[1];
+            // Search quotes without an authorID
+            } else if (authorSearch === "null") {
+                qOptions.where.authorID = null;
+            // Search by just an authorID (wip, broken for now)
+            } else if (!isNaN(authorSearch)) { qOptions.where.authorID = Number.parseInt(authorSearch) }
+            // Otherwise search as part of the author name
+            else { qOptions.where.authorName = { [Op.substring]: authorSearch } }
+        }
 
         let qRNG;
         let qALL; 
@@ -242,11 +255,11 @@ const quotes = sql.define('quotes', {
         if (quotes.length === 0 ) { return message.channel.send(`${error} There aren't any quotes for this search!`) };
         // Pick a random one
         // (OR get the ID the user has picked)
-        qRNG = args.find(num => !isNaN(num) && num != qOptions.where.guild) 
-            ? Number.parseInt(args.find(num => !isNaN(num) && num != qOptions.where.guild))-1 
+        qRNG = args.find(num => !isNaN(num) && num != qOptions.where.guild && num != qOptions.where.authorID) 
+            ? Number.parseInt(args.find(num => !isNaN(num) && num != qOptions.where.guild && num != qOptions.where.authorID))-1 
             : Math.floor(Math.random()*quotes.length);
-        qID = args.find(num => !isNaN(num) && num != qOptions.where.guild)
-            ? Number.parseInt(args.find(num => !isNaN(num) && num != qOptions.where.guild))-1
+        qID = args.find(num => !isNaN(num) && num != qOptions.where.guild && num != qOptions.where.authorID)
+            ? Number.parseInt(args.find(num => !isNaN(num) && num != qOptions.where.guild && num != qOptions.where.authorID))-1
             : null;
         if (qRNG >= quotes.length) { return message.channel.send(`${error} I only have **${quotes.length}** quotes to show.`) };
         const quote = quotes[qRNG];
