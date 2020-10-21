@@ -220,7 +220,14 @@ const quotes = sql.define('quotes', {
             // Search by just an authorID (wip, broken for now)
             } else if (!isNaN(authorSearch)) { qOptions.where.authorID = Number.parseInt(authorSearch) }
             // Otherwise search as part of the author name
-            else { qOptions.where.authorName = { [Op.substring]: authorSearch } }
+            else { 
+                qOptions.where.authorName = { [Op.substring]: authorSearch } 
+            
+                // If the search term matches a person's name,
+                // find their ID and add it to the search
+
+                // not implemented yet
+            }
         }
 
         let qRNG;
@@ -267,7 +274,7 @@ const quotes = sql.define('quotes', {
         // console.log("Quote object: " + JSON.stringify(quote, null, 4));
 
         if (args[args.length-1] === "?delete") {
-            if (typeof qID === "number" || quotes.length === 1) { return this.remove(message, quotes[qRNG]); }
+            if (typeof qID === "number" || quotes.length === 1) { return this.remove(message, qOptions, quotes[qRNG]); }
             else { return message.channel.send(`${error} Are you really going to ask me to delete something without knowing what you want to delete?`) }
         }
 
@@ -331,10 +338,12 @@ const quotes = sql.define('quotes', {
 
 
     },
-    async remove(message, quote) {
+    async remove(message, options, quote) {
      
         // create embed to act on later
         let deleteConfirm = new Discord.MessageEmbed();
+
+        options.where.content = quote.content;
 
         // Create filter for the delete confirm
         // Making sure that only the user initiating the delete
@@ -353,7 +362,7 @@ const quotes = sql.define('quotes', {
                     switch (reaction.emoji.name) {
                         case '✔':
                             // remove the item from the database
-                            message.client.quotes.destroy(quote);
+                            message.client.quotes.destroy(options);
                             // modify the original message to show it was deleted.
                             deleteConfirm.footer = null;
                             msg.edit(deleteConfirm
