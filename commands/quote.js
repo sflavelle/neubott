@@ -60,9 +60,9 @@ const quotes = sql.define('quotes', {
             \`quote me\` retrieves one of *your* quotes, if you've got one.
          
             **ADDING QUOTES**
-            You can add a quote in one of two ways:
-            Sending me a message link: \`quote add https://discordapp.com/channels/...\`
-            Or with text: \`quote add "This is the quote" @someone\`
+            \`quote add https://discordapp.com/channels/...\`
+            \`quote add "This is the quote" @someone\`
+            \`quote remember <author> <message search>\`
             
             **MODIFIERS**
             Adding modifiers change how quotes are selected. They should work with each other.
@@ -72,9 +72,9 @@ const quotes = sql.define('quotes', {
             \`!search <keyword>\` - search by keyword. **One word only.**
 
             **COMMANDS**
-            \`?delete\` - delete the quote
+            \`?delete\` or \`//delquote\` - delete the quote
             `,
-        usage: [ 'quote', 'quote me', 'addquote' ]
+        usage: [ 'quote', 'quote me', 'addquote', 'delquote', 'remember' ]
     },
     async ready(client) {
             client.quotes = quotes;
@@ -114,7 +114,18 @@ const quotes = sql.define('quotes', {
         // First, check if the first argument is an URL, and process that
         const DiscordRegex = new RegExp(/(|canary\.|ptb\.)discord(app)?\.com\/channels/i);
         const QuoteRegex = new RegExp(/"(.+)" (.+)$/s);
-        if (args[0].match(DiscordRegex)) {
+        if (typeof args == 'object' && args.content) {
+            return {
+                content: args.content,
+                authorID: args.author.id,
+                authorName: args.member ? args.member.nickname : args.author.username,
+                addedBy: message.author.id,
+                guild: args.channel.guild.id,
+                msgID: args.id,
+                timestamp: args.createdTimestamp
+            };
+	    }
+        else if (args[0].match(DiscordRegex)) {
             // Successful channel match
             let [guildID, channelID, msgID] = args[0].split('/').slice(4);
             console.log(`[${this.name}] parsing message URL for guild ${guildID}, channel ${channelID}, msg ${msgID}`);
@@ -239,6 +250,10 @@ const quotes = sql.define('quotes', {
                 case 'add': 
                     args.shift();
                     this.add(message, args);
+                    return;
+                case 'remember':
+                    args.shift();
+                    this.remember(message, args);
                     return;
                 case 'parse':
                     args.shift();
@@ -404,5 +419,16 @@ const quotes = sql.define('quotes', {
         // Defines a script to execute for the idle function
         // In this case, simply calls execute() with no arguments
         this.execute(message, []);
+    },
+    async remember(message, args) {
+	let author = args.shift();
+	let search = args.join(" ");
+	
+	let foundMessage = await message.channel.messages.fetch({limit: 50})
+	    .then(messages => messages.find(msg => msg != message && msg.author.username.toLowerCase().indexOf(author.toLowerCase()) != -1 && msg.content.toLowerCase().indexOf(search.toLowerCase()) != -1))
+            .catch(console.error);
+    
+    if (!foundMessage.content) { return message.channel.send(`${error} I couldn't find a message matching that term in the last 50 messages.`) }
+    this.add(message, foundMessage);
     }
 }
