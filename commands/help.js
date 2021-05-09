@@ -48,7 +48,7 @@ module.exports = {
         const commandEmbed = new Discord.MessageEmbed()
             .setTitle(`${name}`);
         if (command.aliases) commandEmbed.addField('Command Aliases', `\`${command.aliases.join('`, `')}\``, true);
-        if (command.help.usage) commandEmbed.addField('Usage', `\`${command.help.usage.join('`\n`')}\``, true);
+        if (command.help.usage) commandEmbed.addField('Usage', `\`${command.help.usage.join('`, `')}\``, true);
         commandEmbed.addField('Info', command.help.long || "I forgot to write a help line here... ", false);
 
         message.channel.send(commandEmbed);

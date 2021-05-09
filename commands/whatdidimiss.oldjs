@@ -4,15 +4,11 @@ const Discord = require('discord.js');
 const config = {
     name: 'whatdidimiss',
     aliases: ["whatimissed"],
-    regexAlias: /what (else )?(did )?I miss(ed)?\?? ?$/i,
-    icon: '⏰',
+    regexAlias: /what (else )?(did )?I miss(ed)?$/i,
+    icon: '275045744002465792',
     help: {
         short: `You missed SO MUCH`,
-        long: `Simple command that tells you one of any number of things you may have 'missed' while you were AFK.
-        
-        You can add more with the \`add\` subcommand, or delete one or more that might be in bad taste with the \`delete\` or \`remove\` command.
-        By default servers will be shown 'global' items and items that were added in their own server.
-        The bot owner can add items with the \`!global\` to allow them to show up in all servers.`,
+        long: `Simple command that tells you one of any number of things you may have 'missed' while you were AFK.`,
         visible: true
     },
     msgs: {
@@ -38,12 +34,8 @@ const db = sql.define('whatimissed', {
     },
     content: {
         type: Sequelize.TEXT,
-        unique: false,
+        unique: true,
         allowNull: false
-    },
-    guild: Sequelize.STRING,
-    global: {
-        type: Sequelize.BOOLEAN
     },
     addedBy: Sequelize.STRING,
     timestamp: {
@@ -58,15 +50,15 @@ module.exports = {
     name: config.name,
     icon: config.icon,
     regexAlias: config.regexAlias,
-    help: config.help,
+    help: config.help 
+        + "\n\n"
+        + `You can add more with the \`add\` subcommand, or delete one or more that might be in bad taste with the \`delete\` or \`remove\` command.`,
     async ready(client) {
         db.sync();
     },
     async execute(message, args) {
         let Options = {
-            where: { 
-                [Op.or]: [{ guild: message.guild.id }, { global: true }]
-            } 
+            where: {}
         };
         
         if (args.length > 0) {
@@ -101,7 +93,7 @@ module.exports = {
 
             // Post the quote and stop execution
             // An allowedMentions object is used here to disallow the bot from pinging anyone
-            return message.channel.send(`${this.icon} ${itemSelected.content}`);
+            return message.channel.send(`${isNaN(this.icon) ? this.icon : message.client.emojis.cache.get(this.icon)} ${itemSelected.content}`);
     } catch (e) {
         switch (e.name) {
             case 'SequelizeDatabaseError':
@@ -115,11 +107,6 @@ module.exports = {
 
     },
     async add(message, args) {
-        let global;
-        if (args[0] === "!global") {
-            if (message.author.id === message.client.config.owner) { args.shift(); global = true }
-            else { args.shift(); message.reply(`Ignoring \`!global\` tag as you are not the bot owner.`); global = false }
-        }
         let prefix = false;
         for (const thisPrefix of message.client.config.prefix) {
             if (message.content.toLowerCase().startsWith(thisPrefix)) prefix = thisPrefix;
@@ -127,14 +114,12 @@ module.exports = {
         for (string of args) {
             string.replace(/\?s=\d{2}$/, '')
         }
-        const newItem = args.join(' ');
+        const newItem = args.join('\n');
 
         try {
             const addedItem = await db.create({
                 content: newItem,
                 addedBy: message.author.id,
-                guild: message.guild.id,
-                global: global,
                 timestamp: Date.now().toFixed(0)
             });
             
@@ -193,7 +178,6 @@ module.exports = {
 
                 let Options = {
                     where: {
-                        [Op.or]: [{ guild: message.guild.id }, { global: true }],
                         content: { [Op.substring]: search }
                     }
                 };
@@ -281,11 +265,5 @@ module.exports = {
                             
                     }
         }
-    },
-    async idle(message, args) {
-        // Defines a script to execute for the idle function
-        // In this case, simply calls execute() with no arguments
-        this.execute(message, []);
     }
-
 }

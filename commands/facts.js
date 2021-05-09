@@ -7,6 +7,11 @@ const config = {
     regexAlias: /^(bott? ?|bucket |neubott )?facts$/i,
     help: {
         short: `totally true real facts`,
+        long: `Bucket thinks he knows what's up. Spoiler alert, he doesn't. All of his facts are *almost* correct, except for the ones that are simply *in*correct.
+        
+        You can add more with the \`add\` subcommand, or delete one or more that might be in bad taste with the \`delete\` or \`remove\` command.
+        By default servers will be shown 'global' items and items that were added in their own server.
+        The bot owner can add items with the \`!global\` to allow them to show up in all servers.`,
         visible: true
     },
     msgs: {
@@ -52,11 +57,7 @@ module.exports = {
     name: config.name,
     icon: config.icon,
     regexAlias: config.regexAlias,
-    help: config.help 
-        + "\n\n"
-        + `You can add more with the \`add\` subcommand, or delete one or more that might be in bad taste with the \`delete\` or \`remove\` command.
-           By default servers will be shown 'global' items and items that were added in their own server.
-           The bot owner can add items with the \`!global\` to allow them to show up in all servers.`,
+    help: config.help,
     async ready(client) {
         db.sync();
     },
