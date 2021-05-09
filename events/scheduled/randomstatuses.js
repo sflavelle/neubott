@@ -18,15 +18,15 @@ module.exports = {
             }},
             { activity: {
                 type: "WATCHING",
-                name: `for ${humanizeDuration(process.uptime()*1000, { round: true, units: ['d', 'h', 'm'], largest: 1 })}`
-            }},
-            { activity: {
-                type: "WATCHING",
                 name: "Eevee commit arson but it's fine"
             }},
             { activity: {
                 type: "WATCHING",
                 name: "it fall over"
+            }},
+            { activity: {
+                type: "WATCHING",
+                name: "something comforting"
             }},
             { activity: {
                 type: "PLAYING",
