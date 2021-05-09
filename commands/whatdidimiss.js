@@ -4,8 +4,8 @@ const Discord = require('discord.js');
 const config = {
     name: 'whatdidimiss',
     aliases: ["whatimissed"],
-    regexAlias: /what (else )?(did )?I miss(ed)?$/i,
-    icon: '275045744002465792',
+    regexAlias: /what (else )?(did )?I miss(ed)?\?? ?$/i,
+    icon: '⏰',
     help: {
         short: `You missed SO MUCH`,
         long: `Simple command that tells you one of any number of things you may have 'missed' while you were AFK.
