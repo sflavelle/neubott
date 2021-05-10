@@ -99,7 +99,7 @@ const quotes = sql.define('quotes', {
         // authorID = quote author's ID
         // authorName = quote author's name (in case user no longer exists)
         // timestamp = timestamp of the created message
-        let quotemsg = `"${content}"\n—*${(authorCheck !== null) ? `<@${authorID}>` : authorName} / ${timestamp ? timestampFormat.format(timestamp) : "Octember 32, 2020"}*`
+        let quotemsg = `"${content}"\n—*${(authorCheck !== null || authorCheck !== false) ? `<@${authorID}>` : authorName} / ${timestamp ? timestampFormat.format(timestamp) : "Octember 32, 2020"}*`
         if (qid) {
             quotemsg += ` [#${qid}]`;
             if (qlength) {
@@ -143,7 +143,7 @@ const quotes = sql.define('quotes', {
                     return {
                         content: quotemsg.content,
                         authorID: quotemsg.author.id,
-                        authorName: quotemsg.member.nickname ? quotemsg.member.nickname : quotemsg.author.username,
+                        authorName: quotemsg.member ? quotemsg.member.nickname : quotemsg.author.username,
                         addedBy: message.author.id,
                         guild: quotemsg.channel.guild.id,
                         msgID: quotemsg.id,
