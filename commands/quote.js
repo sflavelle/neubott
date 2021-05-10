@@ -290,7 +290,7 @@ const quotes = sql.define('quotes', {
 
         if (args[args.length-1] === "?delete") {
             if (typeof qID === "number" || quotes.length === 1) { return this.remove(message, qOptions, quotes[qRNG]); }
-            else { return message.channel.send(`${error} Are you really going to ask me to delete something without knowing what you want to delete?`) }
+            else { return message.channel.send(`${error} I can only delete one quote at a time right now, to prevent accidental purging of quotes.`) }
         }
 
         //
@@ -425,10 +425,20 @@ const quotes = sql.define('quotes', {
 	let search = args.join(" ");
 	
 	let foundMessage = await message.channel.messages.fetch({limit: 50})
-	    .then(messages => messages.find(msg => msg != message && msg.author.username.toLowerCase().indexOf(author.toLowerCase()) != -1 && msg.content.toLowerCase().indexOf(search.toLowerCase()) != -1))
-            .catch(console.error);
+	    .then(messages => messages.find(msg => 
+            msg != message 
+            && (
+                msg.author.username.toLowerCase().indexOf(author.toLowerCase()) != -1 
+                || (msg.member.nickname && msg.member.nickname.toLowerCase().indexOf(author.toLowerCase()) != -1 )
+            )
+            && msg.content.toLowerCase().indexOf(search.toLowerCase()) != -1)
+            )
+            .catch(e => { return e });
+
+    if (foundMessage.name && foundMessage.message)  { return message.channel.send(`${error} ${e.message}`) } // Treating as error
     
     if (!foundMessage.content) { return message.channel.send(`${error} I couldn't find a message matching that term in the last 50 messages.`) }
+    
     this.add(message, foundMessage);
     }
 }
