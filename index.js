@@ -3,6 +3,8 @@ const Discord = require('discord.js');
 
 const schedule = require('node-schedule');
 
+const BotIntents = new Intents(['GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES']);
+
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
 
