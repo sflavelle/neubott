@@ -91,7 +91,7 @@ const quotes = sql.define('quotes', {
             year: 'numeric'
         });
         let authorCheck;
-        try { authorCheck = message.guild.member(authorID) } catch (e) { authorCheck = false; }
+        try { authorCheck = message.guild.member(authorID) } catch (e) { authorCheck = null; }
 
         // QUOTE PARAMETERS
         // 
@@ -99,7 +99,7 @@ const quotes = sql.define('quotes', {
         // authorID = quote author's ID
         // authorName = quote author's name (in case user no longer exists)
         // timestamp = timestamp of the created message
-        let quotemsg = `"${content}"\n—*${(authorCheck !== null || authorCheck !== false) ? `<@${authorID}>` : authorName} / ${timestamp ? timestampFormat.format(timestamp) : "Octember 32, 2020"}*`
+        let quotemsg = `"${content}"\n—*${(authorCheck !== null) ? `<@${authorID}>` : authorName} / ${timestamp ? timestampFormat.format(timestamp) : "Octember 32, 2020"}*`
         if (qid) {
             quotemsg += ` [#${qid}]`;
             if (qlength) {
