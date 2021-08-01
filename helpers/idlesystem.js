@@ -1,5 +1,5 @@
 module.exports = async (client, message) => {
-    const idleTimeout = 6*60; // 6 hours
+    const idleTimeout = 12*60; // 12 hours
     const idleTimeoutDev = 45 // 45 minutes
 
 
