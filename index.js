@@ -7,7 +7,8 @@ const BotIntents = new Intents(['GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES']);
 
 const client = new Client({intents: BotIntents});
 client.commands = new Collection();
-client.commandData = new Array();
+client.commandGlobalData = new Array();
+client.commandGuildData = new Collection();
 
 // Load config into memory
 const config = require('./config.json');
@@ -36,12 +37,22 @@ for (const file of commandFiles) {
 	if (command.ready) {command.ready(client);};
 
 	// Push command data to array
-	if (command.data) {client.commandData.push(command.data);};
+	if (command.data && !command.guilds) {client.commandGlobalData.push(command.data);};
+	// Push guild-specific data to array
+	if (command.data && command.guilds) {
+		command.guilds.forEach(g => {
+			const guildData = client.commandGuildData.get(g);
+			if (guildData === undefined) {client.commandGuildData.set(g, new Array()); console.log(`Creating new GuildData array for guild ${g}`)}
+
+			client.commandGuildData.get(g).push(command.data);
+		})
+	}
 
 	console.log(`Loaded command: ${command.name}`);
 }
 
-console.log(client.commandData);
+console.log(client.commandGlobalData);
+console.log(client.commandGuildData)
 
 client.once('ready', () => {
 	console.log(`Logged in (${client.user.tag})`);
@@ -74,24 +85,23 @@ client.on('interactionCreate', async interaction => {
 client.on('messageCreate', message => idleExecute(client, message));
 client.on('messageCreate', async message => {
 	if (message.content.toLowerCase() === '//cmdregister' && message.author.id === config.owner) {
-		const DiscordCommands = await client.guilds.cache.get('124680630075260928')?.commands.set(client.commandData);
+		//Push global commands
+		const DiscordGlobalCommands = await client.application?.commands.set(client.commandGlobalData);
+		//Find all guild commands, and push them
+		const DiscordGuildCommands = client.commandGuildData.each(async (data, id) =>{
+			console.log(await client.guilds.cache.get(id)?.commands.set(data));
+		});
+		console.log(DiscordGlobalCommands);
+		console.log();
 
 		const CmdOwnerPerms = [{
-			id: '871568972548546662', //eval
-			permissions: [{
 				id: config.owner,
 				type: 'USER',
 				permission: true
-			},
-			{
-				id: '158776702372151296',
-				type: 'ROLE',
-				permission: true
 			}]
-		}];
 
-		await client.guilds.cache.get('124680630075260928')?.commands.permissions.set({ fullPermissions: CmdOwnerPerms });
-		console.log(DiscordCommands);
+		await client.guilds.cache.get('124680630075260928')?.commands.permissions.set({ command: '871568972548546662', permissions: CmdOwnerPerms });
+		await client.guilds.cache.get('206734382990360576')?.commands.permissions.set({ command: '871655686159859722', permissions: CmdOwnerPerms });
 	}
 })
 
