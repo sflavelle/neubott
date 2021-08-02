@@ -46,9 +46,78 @@ const quotes = sql.define('quotes', {
     
     module.exports = {
         name: 'quote',
-        aliases: ['quotes', 'fuck'],
-        guildOnly: true,
-        // readOnly: true,
+        data: {
+            name: 'quote',
+            description: 'Save and recall quotable messages',
+            options: [{
+                name: 'get',
+                type: 'SUB_COMMAND',
+                description: 'Print a quote',
+                options: [{
+                    name: 'user',
+                    type: 'USER',
+                    description: 'User to search'
+                },
+                {
+                    name: 'searchterm',
+                    type: 'STRING',
+                    description: 'A search term to look for'
+                }]
+            },
+            {
+                name: 'add',
+                type: 'SUB_COMMAND_GROUP',
+                description: 'Add a new quote',
+                options: [{
+                    name: 'url',
+                    type: 'SUB_COMMAND',
+                    description: 'Add quote by message URL',
+                    options: [{
+                        name: 'messageurl',
+                        type: 'STRING',
+                        description: 'Discord message URL to add',
+                        required: true
+                    }]
+                },
+                {
+                    name: 'reply',
+                    type: 'SUB_COMMAND',
+                    description: "Add the message you reply to as a quote"
+                },
+                {
+                    name: 'byhand',
+                    type: 'SUB_COMMAND',
+                    description: 'Add a quote by hand',
+                    options: [{
+                        name: 'user',
+                        type: 'USER',
+                        description: 'Author of the quote',
+                        required: true
+                    },
+                    {
+                        name: 'quote',
+                        type: 'STRING',
+                        description: 'Text of the quote',
+                        required: true
+                    }]
+                }]
+            },
+            {
+                name: 'remove',
+                type: 'SUB_COMMAND',
+                description: 'Delete a quote from the database',
+                options: [{
+                    name: 'user',
+                    type: 'USER',
+                    description: 'User to search'
+                },
+                {
+                    name: 'searchterm',
+                    type: 'STRING',
+                    description: 'A search term to look for'
+                }]
+            }]
+        },
         help: {
             visible: true,
             short: `Let's get that on the record`,
