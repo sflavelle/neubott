@@ -57,62 +57,74 @@ const { success, error } = require('../config.json').emoji;
 module.exports = {
     name: config.name,
     icon: config.icon,
+    guilds: ['206734382990360576', '124680630075260928'],
+    data: {
+        name: 'whatdidimiss',
+        description: `You missed SO MUCH`,
+        options: [{
+            name: 'get',
+            type: 'SUB_COMMAND',
+            description: "You missed SO MUCH"
+        },
+        {
+            name: 'add',
+            type: 'SUB_COMMAND',
+            description: 'What HAVENT I missed?!',
+            options: [{
+                name: 'url',
+                type: 'STRING',
+                description: 'the URL (or anything, really) to add'
+            },
+            {
+                name: 'global',
+                type: 'BOOLEAN',
+                description: 'Add to all servers? (owner only)'
+            }]
+        },
+        {
+            name: 'remove',
+            type: 'SUB_COMMAND',
+            description: 'Remove an outdated fact'
+        }
+    ]
+    },
     regexAlias: config.regexAlias,
     help: config.help,
     async ready(client) {
         db.sync();
     },
-    async execute(message, args) {
+    async execute(interaction) {
         let Options = {
             where: { 
-                [Op.or]: [{ guild: message.guild.id }, { global: true }]
+                [Op.or]: [{ guild: interaction.guild.id }, { global: true }]
             } 
         };
-        
-        if (args.length > 0) {
-            // Check if we need to ADD or SET something first
-            switch (args[0]){
-                case 'add': 
-                    args.shift();
-                    this.add(message, args);
-                    return;
-                case 'delete':
-                case 'remove':
-                    args.shift();
-                    if (args.length === 0) { return message.channel.send(`${error} Remove *what*, ${message.author}?`) }
-                    let searchTerm = args[0];
-                    return this.remove(message, searchTerm, false);
-                default:
+        const Mode = interaction.options.getSubcommand();
+
+        if (Mode === 'get') {
+    
+            // Now process the command
+            try {
+                const item = await db.findAll(Options); 
+                if (item.length === 0 ) { return interaction.reply({content: `${error} There aren't any ${config.msgs.descriptorPlural} for this search!`, ephemeral: true}) };
+                // Pick a random one
+                // (OR get the ID the user has picked)
+                let qRNG = Math.floor(Math.random()*item.length);
+                const itemSelected = item[qRNG];
+    
+                // Post the quote and stop execution
+                // An allowedMentions object is used here to disallow the bot from pinging anyone
+                return interaction.reply({content: `${isNaN(this.icon) ? this.icon : interaction.client.emojis.cache.get(this.icon)} ${itemSelected.content}`});
+    
+            } catch (e) {
+                switch (e.name) {
+                    case 'SequelizeDatabaseError':
+                        return interaction.reply({content: `${error} I think that there aren't any ${config.msgs.descriptorPlural} to find.`, ephemeral: true})
+                    default:
+                        return interaction.reply({content: e.stack});
+                }   
             }
         }
-
-        // search term
-        let searchTerm = args[1];
-        if (searchTerm) Options.where.content = searchTerm;
-
-        // Now process the command
-        try {
-            const item = await db.findAll(Options); 
-            if (item.length === 0 ) { return message.channel.send(`${error} There aren't any ${config.msgs.descriptorPlural} for this search!`) };
-            // Pick a random one
-            // (OR get the ID the user has picked)
-            let qRNG = Math.floor(Math.random()*item.length);
-            const itemSelected = item[qRNG];
-
-            // Post the quote and stop execution
-            // An allowedMentions object is used here to disallow the bot from pinging anyone
-            return message.channel.send(`${this.icon} ${itemSelected.content}`);
-    } catch (e) {
-        switch (e.name) {
-            case 'SequelizeDatabaseError':
-                return message.channel.send(`${error} I think that there aren't any ${config.msgs.descriptorPlural} to find.`)
-            default:
-                return message.channel.send(e.stack, { code: 'js' });
-        }
-
-    }
-        
-
     },
     async add(message, args) {
         let global;

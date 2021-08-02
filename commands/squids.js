@@ -95,10 +95,10 @@ module.exports = {
             where: {}
         };
     
-        if (Mode = 'get') {
+        if (Mode === 'get') {
             const StringSearch = interaction.options.getString('author');
             // search term
-            if (StringSearch) Options.where.content = { [Op.substring]: searchTerm };
+            if (StringSearch) Options.where.content = { [Op.substring]: StringSearch };
     
             // Now process the command
             try {
@@ -111,7 +111,7 @@ module.exports = {
     
                 // Post the quote and stop execution
                 // An allowedMentions object is used here to disallow the bot from pinging anyone
-                return interaction.reply({content: `${isNaN(this.icon) ? this.icon : message.client.emojis.cache.get(this.icon)} ${itemSelected.content}`});
+                return interaction.reply({content: `${isNaN(this.icon) ? this.icon : interaction.client.emojis.cache.get(this.icon)} ${itemSelected.content}`});
     
             } catch (e) {
                 switch (e.name) {

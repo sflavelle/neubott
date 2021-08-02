@@ -20,15 +20,15 @@ module.exports = {
         const emojiParam = interaction.options.getString('emoji');
 
         const [, emojiname, emojicode] = emojiParam.match(/^<a?:(.+):(\d+)>$/);
-        const emoji = message.client.emojis.cache.find(e => e.name === emojiname);
+        const emoji = interaction.client.emojis.cache.find(e => e.name === emojiname);
         if (!emoji) { 
             try {
                 const emoji = args[0].match(/^<a/) ? `https://cdn.discordapp.com/emojis/${emojicode}.gif` : `https://cdn.discordapp.com/emojis/${emojicode}.png`;
                 const Bigmoji = new Discord.MessageAttachment(emoji);
-                return interaction.reply({files: Bigmoji}); //Print it
+                return interaction.reply({files: [Bigmoji]}); //Print it
             } catch (e) { return interaction.reply({content: `${error} I can't find it.`, ephemeral: true}) }}
         const Bigmoji = new Discord.MessageAttachment(emoji.url)
-        return interaction.reply({files: Bigmoji}); //Print it
+        return interaction.reply({files: [Bigmoji]}); //Print it
     },
     async idle(message, args) {
         // A variation on the normal command
