@@ -247,16 +247,16 @@ const quotes = sql.define('quotes', {
                         return channel.messages.fetch(msgID).then((quotemsg) => {
                             console.log(`[${this.name}] fetched message?`);
                             console.log(quotemsg);
-                            if (quotemsg.id) {
+                            if (quotemsg.content) {
                                 // We got the linked message, now return the quote object
-                                console.log(`[quote] fetched message ${quotemsg.id} from ${quotemsg.user.username}!`);
+                                console.log(`[quote] fetched message ${quotemsg.id} from ${quotemsg.author.username}!`);
             
                                 // If the message content starts with a mention, strip it
                                 if (quotemsg.content.startsWith('<@')) {quotemsg.content = quotemsg.content.replace(/<@!?(\d+)>/, '').trim()};
                                 this.add(interaction, {
                                     content: quotemsg.content,
-                                    authorID: quotemsg.user.id,
-                                    authorName: quotemsg.member ? quotemsg.member.nickname : quotemsg.user.username,
+                                    authorID: quotemsg.author.id,
+                                    authorName: quotemsg.member ? quotemsg.member.nickname : quotemsg.author.username,
                                     addedBy: interaction.user.id,
                                     guild: quotemsg.channel.guild.id,
                                     msgID: quotemsg.id,
@@ -265,7 +265,7 @@ const quotes = sql.define('quotes', {
                             }
                 
                         })
-                        .catch((e) => {return interaction.reply({content: `${error} I don't have access to that message. It may be in a server or channel I don't see.`, ephemeral: true});});
+                        .catch((e) => {return interaction.reply({content: `${error} ${e}`, ephemeral: true});});
                     }
                     else if (!URL.match(DiscordRegex) && URL.match(/^https?:\/\//i)) {
                         return interaction.reply({content: `${error} You passed me a URL that is not a Discord message link.`, ephemeral: true});
