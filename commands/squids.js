@@ -48,6 +48,37 @@ const { success, error } = require('../config.json').emoji;
 module.exports = {
     name: config.name,
     icon: config.icon,
+    guilds: ['206734382990360576'],
+    data: {
+        name: 'squids',
+        description: `You're echidna, you're esquidna`,
+        options: [{
+            name: 'get',
+            type: 'SUB_COMMAND',
+            description: 'gimme them',
+            options: [{
+                name: 'author',
+                type: 'STRING',
+                description: 'Search for an author'
+            }]
+        },
+        {
+            name: 'add',
+            type: 'SUB_COMMAND',
+            description: 'give us more',
+            options: [{
+                name: 'url',
+                type: 'STRING',
+                description: 'the URL (or anything, really) to add'
+            }]
+        },
+        {
+            name: 'remove',
+            type: 'SUB_COMMAND',
+            description: '😔'
+        }
+    ]
+    },
     regexAlias: config.regexAlias,
     help: config.help 
         + "\n\n"
@@ -55,52 +86,40 @@ module.exports = {
     async ready(client) {
         db.sync();
     },
-    async execute(message, args) {
+    async execute(interaction) {
+
+        const Mode = interaction.options.getSubcommand();
+        const ModeGroup = interaction.options.getSubcommandGroup(false);
+
         let Options = {
             where: {}
         };
-        
-        if (args.length > 0) {
-            // Check if we need to ADD or SET something first
-            switch (args[0]){
-                case 'add': 
-                    args.shift();
-                    this.add(message, args);
-                    return;
-                case 'delete':
-                case 'remove':
-                    args.shift();
-                    if (args.length === 0) { return message.channel.send(`${error} Remove *what*, ${message.author}?`) }
-                    let searchTerm = args[0];
-                    return this.remove(message, searchTerm, false);
-                case 'undo':
-                    return this.remove(message, null, true);
-                default:
+    
+        if (Mode = 'get') {
+            const StringSearch = interaction.options.getString('author');
+            // search term
+            if (StringSearch) Options.where.content = { [Op.substring]: searchTerm };
+    
+            // Now process the command
+            try {
+                const item = await db.findAll(Options); 
+                if (item.length === 0 ) { return interaction.reply({content: `${error} There aren't any ${config.msgs.descriptorPlural} for this search!`, ephemeral: true}) };
+                // Pick a random one
+                // (OR get the ID the user has picked)
+                let qRNG = Math.floor(Math.random()*item.length);
+                const itemSelected = item[qRNG];
+    
+                // Post the quote and stop execution
+                // An allowedMentions object is used here to disallow the bot from pinging anyone
+                return interaction.reply({content: `${isNaN(this.icon) ? this.icon : message.client.emojis.cache.get(this.icon)} ${itemSelected.content}`});
+    
+            } catch (e) {
+                switch (e.name) {
+                    case 'SequelizeDatabaseError':
+                        return interaction.reply({content: `${error} I think that there aren't any ${config.msgs.descriptorPlural} to find.`, ephemeral: true})
+                    default:
+                        return interaction.reply({content: e.stack});
             }
-        }
-
-        // search term
-        let searchTerm = args[0];
-        if (searchTerm) Options.where.content = { [Op.substring]: searchTerm };
-
-        // Now process the command
-        try {
-            const item = await db.findAll(Options); 
-            if (item.length === 0 ) { return message.channel.send(`${error} There aren't any ${config.msgs.descriptorPlural} for this search!`) };
-            // Pick a random one
-            // (OR get the ID the user has picked)
-            let qRNG = Math.floor(Math.random()*item.length);
-            const itemSelected = item[qRNG];
-
-            // Post the quote and stop execution
-            // An allowedMentions object is used here to disallow the bot from pinging anyone
-            return message.channel.send(`${isNaN(this.icon) ? this.icon : message.client.emojis.cache.get(this.icon)} ${itemSelected.content}`);
-    } catch (e) {
-        switch (e.name) {
-            case 'SequelizeDatabaseError':
-                return message.channel.send(`${error} I think that there aren't any ${config.msgs.descriptorPlural} to find.`)
-            default:
-                return message.channel.send(e.stack, { code: 'js' });
         }
 
     }
