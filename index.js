@@ -75,6 +75,22 @@ client.on('messageCreate', message => idleExecute(client, message));
 client.on('messageCreate', async message => {
 	if (message.content.toLowerCase() === '//cmdregister' && message.author.id === config.owner) {
 		const DiscordCommands = await client.guilds.cache.get('124680630075260928')?.commands.set(client.commandData);
+
+		const CmdOwnerPerms = [{
+			id: '871568972548546662', //eval
+			permissions: [{
+				id: config.owner,
+				type: 'USER',
+				permission: true
+			},
+			{
+				id: '158776702372151296',
+				type: 'ROLE',
+				permission: true
+			}]
+		}];
+
+		await client.guilds.cache.get('124680630075260928')?.commands.permissions.set({ fullPermissions: CmdOwnerPerms });
 		console.log(DiscordCommands);
 	}
 })
