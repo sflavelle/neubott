@@ -3,22 +3,32 @@ const { success, error } = require('../config.json').emoji;
 
 module.exports = {
     name: "bigmoji",
-    aliases: ["bogmiji"],
+    data: {
+        name: 'bigmoji',
+        description: 'Your Emojis, but Big',
+        options: [{
+            name: 'emoji',
+            type: 'STRING',
+            description: 'Emoji to choose',
+        }]
+    },
     help: {
         short: 'You are welcome Spicy',
         visible: true
     },
-    execute(message, args) {
-        const [, emojiname, emojicode] = args[0].match(/^<a?:(.+):(\d+)>$/);
+    async execute(interaction) {
+        const emojiParam = interaction.options.getString('emoji');
+
+        const [, emojiname, emojicode] = emojiParam.match(/^<a?:(.+):(\d+)>$/);
         const emoji = message.client.emojis.cache.find(e => e.name === emojiname);
         if (!emoji) { 
             try {
                 const emoji = args[0].match(/^<a/) ? `https://cdn.discordapp.com/emojis/${emojicode}.gif` : `https://cdn.discordapp.com/emojis/${emojicode}.png`;
                 const Bigmoji = new Discord.MessageAttachment(emoji);
-                return message.channel.send(Bigmoji); //Print it
-            } catch (e) { return message.channel.send(`${error} I can't find it.`) }}
+                return interaction.reply({files: Bigmoji}); //Print it
+            } catch (e) { return interaction.reply({content: `${error} I can't find it.`, ephemeral: true}) }}
         const Bigmoji = new Discord.MessageAttachment(emoji.url)
-        return message.channel.send(Bigmoji); //Print it
+        return interaction.reply({files: Bigmoji}); //Print it
     },
     async idle(message, args) {
         // A variation on the normal command
@@ -26,7 +36,7 @@ module.exports = {
 
         const emoji = message.client.emojis.cache.random();
         const Bigmoji = new Discord.MessageAttachment(emoji.url)
-        return message.channel.send(Bigmoji); //Print it
+        return message.channel.send({files: Bigmoji}); //Print it
 
     }
 

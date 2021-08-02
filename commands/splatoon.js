@@ -5,6 +5,11 @@ const humanizeDuration = require("humanize-duration");
 
 module.exports = {
     name: 'splatoon',
+    guilds: ['206734382990360576'],
+    data: {
+        name: 'splatoon',
+        description: 'Current Splatoon 2 Rotations!'
+    },
     help: {
         visible: true,
         short: `Here are the battle stages today!`,
@@ -29,7 +34,7 @@ module.exports = {
             `
 
     },
-    async execute(message, args) {
+    async execute(interaction) {
 
         let TSbegin = Date.now();
 
@@ -97,10 +102,8 @@ module.exports = {
             .setTimestamp()
             .setFooter('Data provided by Splatoon2.ink, processed in ' + (TSend - TSbegin) + 'ms','https://splatoon2.ink/favicon-32x32.png')
         if (Math.floor(timeBeforeFest/1000/60/60/24) < 7) {TurfEmbed.addField('Splatfest Incoming!',`${dataSplatfest.na.festivals[0].names.alpha_short} vs. ${dataSplatfest.na.festivals[0].names.bravo_short} will begin in **${humanizeDuration(timeBeforeFest, { largest: 2 })}**`)}
-
-        message.channel.send((timeRightNow > dataSplatfest.na.festivals[0].times.start && timeRightNow < dataSplatfest.na.festivals[0].times.end) ? FestEmbed : TurfEmbed);
-        // message.channel.send(FestEmbed); // For testing
-     
+        const BattleEmbed = (timeRightNow > dataSplatfest.na.festivals[0].times.start && timeRightNow < dataSplatfest.na.festivals[0].times.end) ? FestEmbed : TurfEmbed
+        
         // Now for the Salmon Run data
         TSbegin = Date.now();
         let dataSR = FS.existsSync('./.cache/spl2-salmonrun.json') ? JSON.parse(FS.readFileSync('./.cache/spl2-salmonrun.json', 'utf8')) : new Object();
@@ -142,7 +145,7 @@ module.exports = {
                 // .setDescription(`The next available reward will be a ${SRreward}.`)
                 .setFooter('Processed in ' + (TSend - TSbegin) + 'ms')
 
-            message.channel.send(null, { embed: SREmbed })
+            interaction.reply({embeds: [BattleEmbed, SREmbed] })
             return; //Only continue further processing if there's a shift running
         } else {
             const SREmbed = new Discord.MessageEmbed()
@@ -157,7 +160,7 @@ module.exports = {
                 .setTimestamp()
                 .setFooter('Data provided by Splatoon2.ink, processed in ' + (TSend - TSbegin) + 'ms','https://splatoon2.ink/favicon-32x32.png')
             
-            message.channel.send(null, { embed: SREmbed });
+                interaction.reply({embeds: [BattleEmbed, SREmbed] })
         }
     }
 }

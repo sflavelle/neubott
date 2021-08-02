@@ -272,6 +272,11 @@ const quotes = sql.define('quotes', {
                     }
                 break;
             }
+        } else if (ModeGroup === 'remove') {
+            const UserSearch = interaction.options.getUser('user');
+            const StringSearch = interaction.options.getString('searchterm');
+
+            
         }
     },
     format(interaction, quote, qid, qlength){

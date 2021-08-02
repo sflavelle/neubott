@@ -4,40 +4,46 @@ module.exports = {
     execute(client) {   
 
         let statuses = [
-            { activity: {
+            { activities: [{
                 type: "WATCHING",
                 name: "from the ceiling"
-            }},
-            { activity: {
+            }]
+        },
+            { activities: [{
                 type: "LISTENING",
                 name: "water"
-            }},
-            { activity: {
+            }]
+        },
+            { activities: [{
                 type: "LISTENING",
                 name: "Children - Not Even Once"
-            }},
-            { activity: {
+            }]
+        },
+            { activities: [{
                 type: "WATCHING",
                 name: "Eevee commit arson but it's fine"
-            }},
-            { activity: {
+            }]
+        },
+            { activities: [{
                 type: "WATCHING",
                 name: "it fall over"
-            }},
-            { activity: {
+            }]
+        },
+            { activities: [{
                 type: "WATCHING",
                 name: "something comforting"
-            }},
-            { activity: {
+            }]
+        },
+            { activities: [{
                 type: "PLAYING",
                 name: "games with my heart"
-            }}
-        ]
+            }]
+        }]
 
         let statusTimer = setInterval(() => {
             let newStatus = statuses[Math.floor(Math.random()*statuses.length)];
             client.user.setPresence(newStatus);
-            console.log(`Updated status: '${newStatus.activity.type} ${newStatus.activity.name}'`)
+            console.log(`Updated status: '${newStatus.activities[0].type} ${newStatus.activities[0].name}'`)
         }, 1000*60*5, client);
     }
 }
