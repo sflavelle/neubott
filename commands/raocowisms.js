@@ -141,46 +141,6 @@ module.exports = {
             }
         }
     },
-    async add(message, args) {
-        let prefix = false;
-        for (const thisPrefix of message.client.config.prefix) {
-            if (message.content.toLowerCase().startsWith(thisPrefix)) prefix = thisPrefix;
-        }
-        for (string of args) {
-            string.replace(/\?s=\d{2}$/, '')
-        }
-        const newItem = args.join('\n');
-
-        try {
-            const addedItem = await db.create({
-                content: newItem,
-                addedBy: message.author.id,
-                timestamp: Date.now().toFixed(0)
-            });
-            
-            const embedQuote = new Discord.MessageEmbed()
-            .setColor('#00ff00')
-            .setTitle(`${success} Item added successfully`)
-            .setDescription(`Now I have **${addedItem.id}** ${addedItem.id > 0 ? config.msgs.descriptorPlural : config.msgs.descriptorSingular}.
-            
-                            ${addedItem.content}`);
-            
-            message.react('👍');
-            return message.channel.send(embedQuote)
-                .then((msg) => msg.delete({ timeout: 10000 }));
-        } catch (e) {
-            switch (e.name) {
-                case 'SequelizeUniqueConstraintError':
-                    return message.channel.send(`${error} I already have that! :D`);
-                default:
-                    return message.channel.send(e.stack, { code: 'js' });
-            }
-        }
-
-        // return message.channel.send(`${error} This also isn't ready yet.`);
-
-
-    },
     async remove(message, search, undo, undoitem) {
         switch (undo) {
             case 'true':

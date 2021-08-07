@@ -165,22 +165,6 @@ module.exports = {
             }
         }
     },
-    async add(message, args) {
-        let global;
-        if (args[0] === "!global") {
-            if (message.author.id === message.client.config.owner) { args.shift(); global = true }
-            else { args.shift();  global = false }
-        }
-        let prefix = false;
-        for (const thisPrefix of message.client.config.prefix) {
-            if (message.content.toLowerCase().startsWith(thisPrefix)) prefix = thisPrefix;
-        }
-        
-
-        // return message.channel.send(`${error} This also isn't ready yet.`);
-
-
-    },
     async remove(message, search, undo, undoitem) {
         switch (undo) {
             case 'true':
