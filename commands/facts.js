@@ -72,7 +72,8 @@ module.exports = {
             options: [{
                 name: 'url',
                 type: 'STRING',
-                description: 'the URL (or anything, really) to add'
+                description: 'the URL (or anything, really) to add',
+                required: true
             },
             {
                 name: 'global',

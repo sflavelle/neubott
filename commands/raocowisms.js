@@ -114,6 +114,32 @@ module.exports = {
                 }   
             }
         }
+        else if (Mode === 'add') {
+            const URL = interaction.options.getString('url');
+            try {
+                const addedItem = await db.create({
+                    content: URL.replace(/\?s=\d{2}$/, ''),
+                    addedBy: interaction.user.id,
+                    timestamp: Date.now().toFixed(0)
+                });
+                
+                const embedQuote = new Discord.MessageEmbed()
+                .setColor('#00ff00')
+                .setTitle(`${success} Item added successfully`)
+                .setDescription(`Now I have **${addedItem.id}** ${addedItem.id > 0 ? config.msgs.descriptorPlural : config.msgs.descriptorSingular}.
+                
+                                ${addedItem.content}`);
+                
+                interaction.reply({embeds: [embedQuote]});
+            } catch (e) {
+                switch (e.name) {
+                    case 'SequelizeUniqueConstraintError':
+                        return interaction.reply({content: `${error} I already have that! :D`, ephemeral: true});
+                    default:
+                        return interaction.reply({content: e.stack, ephemeral: true});
+                }
+            }
+        }
     },
     async add(message, args) {
         let prefix = false;
