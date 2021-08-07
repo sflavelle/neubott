@@ -338,7 +338,7 @@ const quotes = sql.define('quotes', {
                 case 'SequelizeUniqueConstraintError':
                     return message.reply({content: `${error} For some reason, I tried saving to a quote ID that already exists. :thinking:`, ephemeral: true});
                 default:
-                    return message.reply({content: Format.codeBlock('js', e.stack)});
+                    return message.reply({content: Format.codeBlock('js', e.stack), ephemeral: true});
             }
         }
 

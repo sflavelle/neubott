@@ -131,7 +131,7 @@ module.exports = {
                     case 'SequelizeDatabaseError':
                         return interaction.reply({content: `${error} I think that there aren't any ${config.msgs.descriptorPlural} to find.`, ephemeral: true})
                     default:
-                        return interaction.reply({content: e.stack});
+                        return interaction.reply({content: e.stack, ephemeral: true});
                 }   
             }
         }
