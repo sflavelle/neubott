@@ -115,6 +115,12 @@ module.exports = {
                 // (OR get the ID the user has picked)
                 let qRNG = Math.floor(Math.random()*item.length);
                 const itemSelected = item[qRNG];
+
+                            // Substitute deathmsg variables
+                itemSelected.content = itemSelected.content.replace(/`user`/g, interaction.user.nick || interaction.author.username);
+                itemSelected.content = itemSelected.content.replace(/`server`/g, interaction.guild.name);
+                itemSelected.content = itemSelected.content.replace(/`USER`/g, (interaction.user.nick || interaction.author.username).toUpperCase());
+                itemSelected.content = itemSelected.content.replace(/`SERVER`/g, interaction.guild.name.toUpperCase());
     
                 // Post the quote and stop execution
                 // An allowedMentions object is used here to disallow the bot from pinging anyone
