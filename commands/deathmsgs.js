@@ -117,9 +117,9 @@ module.exports = {
                 const itemSelected = item[qRNG];
 
                             // Substitute deathmsg variables
-                itemSelected.content = itemSelected.content.replace(/`user`/g, interaction.user.nick || interaction.author.username);
+                itemSelected.content = itemSelected.content.replace(/`user`/g, interaction.member.nickname || interaction.user.username);
                 itemSelected.content = itemSelected.content.replace(/`server`/g, interaction.guild.name);
-                itemSelected.content = itemSelected.content.replace(/`USER`/g, (interaction.user.nick || interaction.author.username).toUpperCase());
+                itemSelected.content = itemSelected.content.replace(/`USER`/g, (interaction.member.nickname || interaction.user.username).toUpperCase());
                 itemSelected.content = itemSelected.content.replace(/`SERVER`/g, interaction.guild.name.toUpperCase());
     
                 // Post the quote and stop execution
