@@ -1,5 +1,7 @@
-const fs = require('fs');
+const fs = require('node:fs');
 const { Client, Collection, Intents } = require('discord.js');
+const { REST } = require('@discordjs/rest');
+const { Routes } = require ('discord-api-types/v9');
 
 const schedule = require('node-schedule');
 
@@ -9,6 +11,8 @@ const client = new Client({intents: BotIntents});
 client.commands = new Collection();
 client.commandGlobalData = new Array();
 client.commandGuildData = new Collection();
+
+const clientID = '250947682758164491';
 
 // Load config into memory
 const config = require('./config.json');
@@ -83,27 +87,56 @@ client.on('interactionCreate', async interaction => {
 
 // Message Handler
 client.on('messageCreate', message => idleExecute(client, message));
-client.on('messageCreate', async message => {
-	if (message.content.toLowerCase() === '//cmdregister' && message.author.id === config.owner) {
-		//Push global commands
-		const DiscordGlobalCommands = await client.application?.commands.set(client.commandGlobalData);
-		//Find all guild commands, and push them
-		const DiscordGuildCommands = client.commandGuildData.each(async (data, id) =>{
-			console.log(await client.guilds.cache.get(id)?.commands.set(data));
-		});
-		console.log(DiscordGlobalCommands);
-		console.log();
 
-		const CmdOwnerPerms = [{
-				id: config.owner,
-				type: 'USER',
-				permission: true
-			}]
+/*
+//Push global commands
+const DiscordGlobalCommands = await client.application?.commands.set(client.commandGlobalData);
+//Find all guild commands, and push them
+const DiscordGuildCommands = client.commandGuildData.each(async (data, id) =>{
+	console.log(await client.guilds.cache.get(id)?.commands.set(data));
+});
+console.log(DiscordGlobalCommands);
+console.log();
+	const CmdOwnerPerms = [{
+		id: config.owner,
+		type: 'USER',
+		permission: true
+	}]
+await client.guilds.cache.get('124680630075260928')?.commands.permissions.set({ command: '871568972548546662', permissions: CmdOwnerPerms });
+await client.guilds.cache.get('206734382990360576')?.commands.permissions.set({ command: '871655686159859722', permissions: CmdOwnerPerms });
+*/
 
-		await client.guilds.cache.get('124680630075260928')?.commands.permissions.set({ command: '871568972548546662', permissions: CmdOwnerPerms });
-		await client.guilds.cache.get('206734382990360576')?.commands.permissions.set({ command: '871655686159859722', permissions: CmdOwnerPerms });
+const rest = new REST({ version: '9'}).setToken(config.token);
+
+(async () => {
+	try {
+		console.log('Started refreshing global commands.');
+		await rest.put(
+			Routes.applicationCommands(clientID),
+			{ body: client.commandGlobalData }
+		);
+
+		console.log('Success! Global commands refreshed.');
+	} catch (error) {
+		console.error(error);
 	}
-})
+})();
+
+(async () => {
+	try {
+		console.log('Started refreshing guild commands.');
+		
+		client.commandGuildData.each(async (data, id) => {
+			rest.put(
+				Routes.applicationGuildCommands(clientID, id),
+				{ body: data }
+			);
+		});
+		console.log('Success! Guild commands refreshed.');
+	} catch (error) {
+		console.error(error)
+	}
+})();
 
 // client.on('messageCreate', message => {
 // 	// Allow multiple prefixes?
