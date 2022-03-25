@@ -3,15 +3,15 @@ const { success, error } = require('../config.json').emoji;
 
 module.exports = {
     name: "bigmoji",
-    data: {
-        name: 'bigmoji',
-        description: 'Your Emojis, but Big',
-        options: [{
-            name: 'emoji',
-            type: 'STRING',
-            description: 'Emoji to choose',
-        }]
-    },
+    // data: {
+    //     name: 'bigmoji',
+    //     description: 'Your Emojis, but Big',
+    //     options: [{
+    //         name: 'emoji',
+    //         type: 'STRING',
+    //         description: 'Emoji to choose',
+    //     }]
+    // },
     help: {
         short: 'You are welcome Spicy',
         visible: true
