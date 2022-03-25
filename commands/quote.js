@@ -2,7 +2,7 @@ const { Sequelize, Op } = require('sequelize');
 const moment = require('moment');
 const Discord = require('discord.js');
 const Format = Discord.Formatters;
-
+const { SlashCommandBuilder } = require('@discordjs/builders');
 
 const sql = new Sequelize('database', 'user', 'password', {
     host: 'localhost',
@@ -47,78 +47,35 @@ const quotes = sql.define('quotes', {
     
     module.exports = {
         name: 'quote',
-        data: {
-            name: 'quote',
-            description: 'Save and recall quotable messages',
-            options: [{
-                name: 'get',
-                type: 'SUB_COMMAND',
-                description: 'Print a quote',
-                options: [{
-                    name: 'user',
-                    type: 'USER',
-                    description: 'User to search'
-                },
-                {
-                    name: 'searchterm',
-                    type: 'STRING',
-                    description: 'A search term to look for'
-                }]
-            },
-            {
-                name: 'add',
-                type: 'SUB_COMMAND_GROUP',
-                description: 'Add a new quote',
-                options: [{
-                    name: 'url',
-                    type: 'SUB_COMMAND',
-                    description: 'Add quote by message URL',
-                    options: [{
-                        name: 'messageurl',
-                        type: 'STRING',
-                        description: 'Discord message URL to add',
-                        required: true
-                    }]
-                },
-                {
-                    name: 'reply',
-                    type: 'SUB_COMMAND',
-                    description: "Add the message you reply to as a quote"
-                },
-                {
-                    name: 'byhand',
-                    type: 'SUB_COMMAND',
-                    description: 'Add a quote by hand',
-                    options: [{
-                        name: 'user',
-                        type: 'USER',
-                        description: 'Author of the quote',
-                        required: true
-                    },
-                    {
-                        name: 'quote',
-                        type: 'STRING',
-                        description: 'Text of the quote',
-                        required: true
-                    }]
-                }]
-            },
-            {
-                name: 'remove',
-                type: 'SUB_COMMAND',
-                description: 'Delete a quote from the database',
-                options: [{
-                    name: 'user',
-                    type: 'USER',
-                    description: 'User to search'
-                },
-                {
-                    name: 'searchterm',
-                    type: 'STRING',
-                    description: 'A search term to look for'
-                }]
-            }]
-        },
+        data: new SlashCommandBuilder()
+            .setName('quote')
+            .setDescription('Save and recall quotable messages')
+            .addSubcommand(subcommand =>
+                subcommand
+                    .setName('get')
+                    .setDescription('Print a quote')
+                    .addUserOption(option => option.setName('user').setDescription('User to search'))
+                    .addStringOption(option => option.setName('searchterm').setDescription('A search term to look for'))
+                    )
+            .addSubcommandGroup((group) =>
+                group
+                    .setName('add')
+                    .setDescription('Add a new quote')
+                    .addSubcommand((subcommand) =>
+                        subcommand
+                            .setName('url')
+                            .setDescription('Add quote by message URL')
+                            .addStringOption(option => option.setName('messageurl').setDescription('Discord message URL to add').setRequired(true))
+                        )
+                    .addSubcommand((subcommand) =>
+                        subcommand
+                            .setName('byhand')
+                            .setDescription('Add a quote by hand')
+                            .addUserOption((option) => option.setName('user').setDescription('Author of the quote').setRequired(true))
+                            .addStringOption((option) => option.setName('quote').setDescription('The text of the quote').setRequired(true))
+                    )
+                ),
+
         help: {
             visible: true,
             short: `Let's get that on the record`,

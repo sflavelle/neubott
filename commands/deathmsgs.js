@@ -1,5 +1,6 @@
 const { Sequelize, Op } = require('sequelize');
 const Discord = require('discord.js');
+const { SlashCommandBuilder } = require('@discordjs/builders');
 
 const config = {
     name: 'deathmsgs',
@@ -61,37 +62,26 @@ module.exports = {
     name: config.name,
     icon: config.icon,
     guilds: ['206734382990360576', '124680630075260928'],
-    data: {
-        name: 'deathmsgs',
-        description: `Death messages (for idle)`,
-        options: [{
-            name: 'get',
-            type: 'SUB_COMMAND',
-            description: "YOU DIED"
-        },
-        {
-            name: 'add',
-            type: 'SUB_COMMAND',
-            description: 'give us more',
-            options: [{
-                name: 'url',
-                type: 'STRING',
-                description: 'the URL (or anything, really) to add',
-                required: true
-            },
-            {
-                name: 'global',
-                type: 'BOOLEAN',
-                description: 'Add to all servers? (owner only)'
-            }]
-        },
-        {
-            name: 'remove',
-            type: 'SUB_COMMAND',
-            description: 'Remove an outdated fact'
-        }
-    ]
-    },
+    data: new SlashCommandBuilder()
+            .setName('deathmsgs')
+            .setDescription('Death messages (for the idle function)')
+            .addSubcommand((subcommand) =>
+                subcommand
+                    .setName('get')
+                    .setDescription('YOU DIED ☠️')
+            )
+            .addSubcommand((subcommand) =>
+                subcommand
+                    .setName('add')
+                    .setDescription('blood for the blood bot')
+                    .addStringOption(option => option.setName('string').setDescription('The message to add').setRequired(true))
+                    .addBooleanOption(option => option.setName('global').setDescription('Add to every server? (owner only)'))
+            )
+            .addSubcommand((subcommand) =>
+                subcommand
+                    .setName('remove')
+                    .setDescription('Remove a death message')
+            ),
     regexAlias: config.regexAlias,
     help: config.help,
     async ready(client) {
