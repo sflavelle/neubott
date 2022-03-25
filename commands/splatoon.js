@@ -2,14 +2,14 @@ const Discord = require('discord.js');
 const FS = require("fs");
 const axios = require("axios");
 const humanizeDuration = require("humanize-duration");
+const { SlashCommandBuilder } = require('@discordjs/builders');
 
 module.exports = {
     name: 'splatoon',
     guilds: ['206734382990360576'],
-    data: {
-        name: 'splatoon',
-        description: 'Current Splatoon 2 Rotations!'
-    },
+    data: new SlashCommandBuilder()
+            .setName('splatoon')
+            .setDescription('Current Splatoon 2 Rotations!'),
     help: {
         visible: true,
         short: `Here are the battle stages today!`,

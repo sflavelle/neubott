@@ -1,5 +1,6 @@
 const { Sequelize, Op } = require('sequelize');
 const Discord = require('discord.js');
+const { SlashCommandBuilder } = require('@discordjs/builders');
 
 const config = {
     name: 'raocowisms',
@@ -47,36 +48,26 @@ module.exports = {
     name: config.name,
     icon: config.icon,
     guilds: ['206734382990360576', '124680630075260928'],
-    data: {
-        name: 'raocowisms',
-        description: `best described as a thing`,
-        options: [{
-            name: 'get',
-            type: 'SUB_COMMAND',
-            description: "best described as a thing"
-        },
-        {
-            name: 'add',
-            type: 'SUB_COMMAND',
-            description: 'YOU FOOOUUND A...',
-            options: [{
-                name: 'url',
-                type: 'STRING',
-                description: 'the URL (or anything, really) to add'
-            },
-            {
-                name: 'global',
-                type: 'BOOLEAN',
-                description: 'Add to all servers? (owner only)'
-            }]
-        },
-        {
-            name: 'remove',
-            type: 'SUB_COMMAND',
-            description: 'destroy the world and everything inside'
-        }
-    ]
-    },
+    data: new SlashCommandBuilder()
+            .setName('raocowisms')
+            .setDescription('best described as a thing')
+            .addSubcommand((subcommand) =>
+                subcommand
+                    .setName('get')
+                    .setDescription("best described as a thing")
+            )
+            .addSubcommand((subcommand) =>
+                subcommand
+                    .setName('add')
+                    .setDescription('YOU FOOOUUND A...')
+                    .addStringOption(option => option.setName('string').setDescription('The message or URL to add').setRequired(true))
+                    .addBooleanOption(option => option.setName('global').setDescription('Add to every server? (owner only)'))
+            )
+            .addSubcommand((subcommand) =>
+                subcommand
+                    .setName('remove')
+                    .setDescription('destroy the world and everything inside')
+            ),
     help: config.help 
         + "\n\n"
         + `You can add more with the \`add\` subcommand, or delete one or more that might be in bad taste with the \`delete\` or \`remove\` command.`,
