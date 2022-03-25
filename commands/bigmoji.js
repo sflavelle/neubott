@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const { success, error } = require('../config.json').emoji;
+const { SlashCommandBuilder } = require('@discordjs/builders');
 
 module.exports = {
     name: "bigmoji",
