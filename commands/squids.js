@@ -1,6 +1,7 @@
 const { Sequelize, Op } = require('sequelize');
 const Discord = require('discord.js');
 const { remove } = require('./quote');
+const { SlashCommandBuilder } = require('@discordjs/builders');
 
 const config = {
     name: 'squids',
@@ -49,37 +50,27 @@ module.exports = {
     name: config.name,
     icon: config.icon,
     guilds: ['206734382990360576'],
-    data: {
-        name: 'squids',
-        description: `You're echidna, you're esquidna`,
-        options: [{
-            name: 'get',
-            type: 'SUB_COMMAND',
-            description: 'gimme them',
-            options: [{
-                name: 'author',
-                type: 'STRING',
-                description: 'Search for an author'
-            }]
-        },
-        {
-            name: 'add',
-            type: 'SUB_COMMAND',
-            description: 'give us more',
-            options: [{
-                name: 'url',
-                type: 'STRING',
-                description: 'the URL (or anything, really) to add',
-                required: true
-            }]
-        },
-        {
-            name: 'remove',
-            type: 'SUB_COMMAND',
-            description: '😔'
-        }
-    ]
-    },
+    data: new SlashCommandBuilder()
+    .setName('squids')
+    .setDescription(`You're echidna, you're esquidna`)
+    .addSubcommand((subcommand) =>
+        subcommand
+            .setName('get')
+            .setDescription(`You're echidna, you're esquidna`)
+            .addStringOption(option => option.setName('author').setDescription('Search for an author'))
+    )
+    .addSubcommand((subcommand) =>
+        subcommand
+            .setName('add')
+            .setDescription(`We have plenty of woomy`)
+            .addStringOption(option => option.setName('string').setDescription('The message or URL to add').setRequired(true))
+            .addBooleanOption(option => option.setName('global').setDescription('Add to every server? (owner only)'))
+    )
+    .addSubcommand((subcommand) =>
+        subcommand
+            .setName('remove')
+            .setDescription("splat this")
+    ),
     regexAlias: config.regexAlias,
     help: config.help 
         + "\n\n"

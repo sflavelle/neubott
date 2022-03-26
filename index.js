@@ -55,8 +55,8 @@ for (const file of commandFiles) {
 	console.log(`Loaded command: ${command.name}`);
 }
 
-console.log(client.commandGlobalData);
-console.log(client.commandGuildData)
+// console.log(client.commandGlobalData);
+// console.log(client.commandGuildData)
 
 client.once('ready', () => {
 	console.log(`Logged in (${client.user.tag})`);
