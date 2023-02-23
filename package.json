@@ -28,7 +28,7 @@
     "discord.js": "^13.6.0",
     "humanize-duration": "^3.27.1",
     "node-schedule": "^2.1.0",
-    "sequelize": "^6.17.0",
+    "sequelize": "^6.28.2",
     "sqlite3": "^5.0.3"
   }
 }
